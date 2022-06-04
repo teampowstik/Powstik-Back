@@ -10,6 +10,9 @@ def createApp(configClass = Config):
 
     db.init_app(app)
 
+    from Files.user.routes import user
+    app.register_blueprint(user)
+
     with app.app_context():
         db.create_all()
     
