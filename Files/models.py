@@ -3,11 +3,11 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 
-app=Flask(__name__)
+# app=Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///site.db'
+# # app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///site.db'
 
-db=SQLAlchemy(app)
+db=SQLAlchemy()
 
 class User (db.Model):
     __tablename__ = "User"
@@ -24,8 +24,8 @@ class User (db.Model):
 
 class Cart (db.Model):
     __tablename__ = 'Cart'
-    table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    customer_id=db.Column(db.Integer, db.ForeignKey(db.ForeignKey("User.user_id")))
+    cart_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    customer_id=db.Column(db.Integer, db.ForeignKey("User.user_id"))
     price=db.Column(db.Numeric(10,2),nullable=False)
     pro_con_id = db.Column(db.Integer, 
                            db.ForeignKey("Consultant.consultant_id"), 
@@ -64,7 +64,7 @@ class Address (db.Model):
     state = db.Column(db.String(80), nullable=False)
     country = db.Column(db.String(80), nullable=False)
     zipcode = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey(db.ForeignKey("User.user_id")))
+    user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
     
 class Order (db.Model):
     __tablename__ = "Order"
@@ -98,6 +98,7 @@ class BelongsToCategory (db.Model):
 class Product (db.Model):
     __tablename__ = 'Product'
     product_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    name = db.Column(db.String(80), nullable=False)
     qty_left = db.Column(db.String, nullable=False)
     image = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
