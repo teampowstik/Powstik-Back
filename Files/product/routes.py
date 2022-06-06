@@ -1,7 +1,7 @@
-from math import prod
 from flask import request, jsonify, Blueprint
 from flask_restful import abort, marshal_with
-from Files.models import db, Product
+from Files import db
+from models import Product, User
 import json
 
 product = Blueprint('product', __name__, url_prefix='/product')
@@ -42,7 +42,7 @@ def add_product():
             qty_left=product_qty,category=product_category,related_products=product_related_products)
         db.session.add(product)
         db.session.commit()
-        return product, 201
+        return jsonify(product), 201
 
     return {"error": "Request must be JSON"}, 415
 
@@ -65,7 +65,7 @@ def modify_product(id):
         
         db.session.add(product)
         db.session.commit()
-        return product, 201
+        return jsonify(product), 201
     
     return {"error": "Request must be JSON"}, 415
     
@@ -77,4 +77,4 @@ def delete_product(id):
     product=db.session.query(Product).filter(Product.product_id==id).first()
     db.session.delete(product)
     db.session.commit()
-    return product, 201
+    return jsonify(product), 201
