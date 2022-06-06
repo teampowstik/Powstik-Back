@@ -1,7 +1,7 @@
 from flask import request, jsonify, Blueprint
 from flask_restful import abort, marshal_with
 from Files import db
-from models import Product, User
+from ..models import Product, Category
 import json
 
 product = Blueprint('product', __name__, url_prefix='/product')
@@ -57,7 +57,7 @@ def add_product():
 
     return {"error": "Request must be JSON"}, 415
 
-@product.post("/update/<integer:id>")
+@product.post("/update/<int:id>")
 @marshal_with(resource_fields)
 def modify_product(id):
     #modify product details like price, etc.
@@ -81,7 +81,7 @@ def modify_product(id):
     return {"error": "Request must be JSON"}, 415
     
     
-@product.post("/delete/<integer:id>")
+@product.post("/delete/<int:id>")
 @marshal_with(resource_fields)
 def delete_product(id):
     #delete specified product
