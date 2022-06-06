@@ -1,32 +1,12 @@
 from flask import request, jsonify, Blueprint
-from flask_restful import abort, reqparse, fields, marshal_with
-from Files.models import db, Product
+from flask_restful import abort, marshal_with
+from Files import db
+from models import Product, User
 import json
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
-add_product_args = reqparse.RequestParser()
-add_product_args.add_argument('name', type=str, required=True, help='Product name cannot be blank!')
-add_product_args.add_argument('description', type=str, required=True, help='Product description cannot be blank!')
-add_product_args.add_argument('price', type=float, required=True, help='Product price cannot be blank!')
-add_product_args.add_argument('image', type=str, required=True, help='Product image cannot be blank!')
-add_product_args.add_argument('discount', type=float, required=True, help='Product discount cannot be blank!')
-add_product_args.add_argument('qty_left', type=int, required=True, help='Product qty cannot be blank!')
-add_product_args.add_argument('category', type=int, required=True, help='Product category cannot be blank!')
-add_product_args.add_argument('related_products', type=str, required=True, help='Product related products cannot be blank!')
-
-resource_fields = {
-    'product_id': fields.Integer,
-    'name': fields.String,
-    'description': fields.String,
-    'price': fields.String,
-    'effective_price': fields.String,
-    'image': fields.String,
-    'discount': fields.String,
-    'qty_left': fields.String,
-    'category': fields.String,
-    'related_products': fields.String,
-}
+from .utils import add_product_args, resource_fields
 
 @product.get('/')
 @marshal_with(resource_fields)
@@ -73,5 +53,39 @@ def add_product():
             qty_left=request.json['qty_left'],category=request.json['category'],related_products=request.json['related_products'])
         db.session.add(product)
         db.session.commit()
-        return product, 201
+        return jsonify(product), 201
+
     return {"error": "Request must be JSON"}, 415
+
+@product.post("/update/<integer:id>")
+@marshal_with(resource_fields)
+def modify_product(id):
+    #modify product details like price, etc.
+    if request.is_json:
+        product=db.session.query(Product).filter(Product.product_id==id).first()
+        args=add_product_args.parse_args()
+        
+        product.name=args['name']
+        product.desription=args['description']
+        product.price=args['price']
+        product.image=args['image']
+        product.discount=args['discount']
+        product.qty=args['qty_left']
+        product.category=args['category']
+        product.related_products=args['related_products']
+        
+        db.session.add(product)
+        db.session.commit()
+        return jsonify(product), 201
+    
+    return {"error": "Request must be JSON"}, 415
+    
+    
+@product.post("/delete/<integer:id>")
+@marshal_with(resource_fields)
+def delete_product(id):
+    #delete specified product
+    product=db.session.query(Product).filter(Product.product_id==id).first()
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify(product), 201
