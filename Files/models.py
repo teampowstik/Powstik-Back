@@ -1,13 +1,6 @@
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
-
-app=Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///site.db'
-
-db=SQLAlchemy(app)
+from Files import db
 
 class User (db.Model):
     __tablename__ = "User"
