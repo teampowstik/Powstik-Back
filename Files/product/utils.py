@@ -14,10 +14,6 @@ add_product_args.add_argument('qty_left', type=int, required=True, help='Product
 add_product_args.add_argument('category', type=int, required=True, help='Product category cannot be blank!')
 add_product_args.add_argument('related_products', type=str, required=True, help='Product related products cannot be blank!')
 
-class JsonModel(object):
-    def as_dict(self):
-       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
 
 def get_all_products():
     result=Product.query.all()
