@@ -1,6 +1,9 @@
 from flask import Flask
 from Files.config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+
+ma=Marshmallow()
 
 db=SQLAlchemy()
 
