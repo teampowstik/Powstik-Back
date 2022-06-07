@@ -14,10 +14,10 @@ def createApp(configClass = Config):
     from Files.user.routes import user
     app.register_blueprint(user)
 
-    from Files.product.routes import product
-    app.register_blueprint(product)
+    # from Files.product.routes import product
+    # app.register_blueprint(product)
 
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
     
     return app

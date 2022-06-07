@@ -1,26 +1,40 @@
-# temp.py
 from flask import request, jsonify, Blueprint
+from Files import db
+from ..models import User
 
-user = Blueprint('user', __name__)
+user = Blueprint('user', __name__, url_prefix='/user')
 
-countries = [
-    {"id": 1, "name": "Thailand", "capital": "Bangkok", "area": 513120},
-    {"id": 2, "name": "Australia", "capital": "Canberra", "area": 7617930},
-    {"id": 3, "name": "Egypt", "capital": "Cairo", "area": 1010408},
-]
-
-def _find_next_id():
-    return max(country["id"] for country in countries) + 1
-
-@user.get("/countries")
-def get_countries():
-    return jsonify(countries)
-
-@user.post("/countries")
-def add_country():
+@user.post('/')
+def add_user():
     if request.is_json:
-        country = request.get_json()
-        country["id"] = _find_next_id()
-        countries.append(country)
-        return country, 201
-    return {"error": "Request must be JSON"}, 415
+        user=User(first_name=request.json['first_name'],last_name=request.json['last_name'],
+                email=request.json['email'],password = request.json['password'],
+                phone = request.json['phone'],user_type = request.json['user_type'])
+        db.session.add(user)
+        db.session.commit()
+        return {"message": "User Successfully Added"}, 201
+
+    return {"message": "Request must be JSON"}, 415
+
+@user.get('/')
+def get_user():
+    user_details = user.query.all()
+    return jsonify(user_details)
+
+@user.get('/<int:id>')
+def get_user(id):
+    user_details=db.session.query(User).filter(User.user_id==id).first()
+    if not user_details:
+        return {"message": "User not found"}, 404
+    return jsonify(user_details)
+
+@user.delete("/delete/<int:user_id>")
+def delete_user(user_id):
+    user_details=db.session.query(User).filter(User.user_id==user_id).first()
+    if not user_details:
+        return {"message": "Unable to find user"}, 404
+    db.session.delete(user_details)
+    db.session.commit()
+    return {"message": "User Successfully Registered"}, 201
+
+
