@@ -49,21 +49,21 @@ def update_product(id):
         product=db.session.query(Product).filter(Product.product_id==id).first()
         if not product:
             return {"message": "No product found"}, 404
-        args=add_product_args.parse_args()
         
-        product.name=args['name']
-        product.desription=args['description']
-        product.price=args['price']
-        product.image=args['image']
-        product.discount=args['discount']
-        product.qty=args['qty_left']
-        product.category=args['category']
-        product.related_products=args['related_products']
+        product.name=request.json['name']
+        product.description=request.json['description']
+        product.price=request.json['price']
+        product.image=request.json['image']
+        product.discount=request.json['discount']
+        product.effective_price=float(request.json['price'])-(float(request.json['discount'])*float(request.json['price'])/100)
+        product.qty_left=request.json['qty_left']
+        product.category=request.json['category']
+        product.related_products=request.json['related_products']
         
         db.session.add(product)
         db.session.commit()
 
-        return product
+        return {"message": "Done"}, 201
     
     return {"error": "Request must be JSON"}, 415
 
