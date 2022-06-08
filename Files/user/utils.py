@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from Files import db
-from ..models import User
+from ..models import User, UserSchema
 
 def add_new_user():
     if request.is_json:
@@ -15,20 +15,24 @@ def add_new_user():
 
 def retrieve_all_users():
     user_details = User.query.all()
-    return jsonify(user_details)
+    user_schema=UserSchema(many=True)
+    output = user_schema.dump(user_details)
+    return jsonify(output)
 
 def retrieve_user_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     if not user_details:
         return {"message": "User not found"}, 404
-    return jsonify(user_details)
+    user_schema=UserSchema()
+    output = user_schema.dump(user_details)
+    return jsonify(output)
 
-def delete_user(user_id):
+def remove_user(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     if not user_details:
         return {"message": "Unable to find user"}, 404
     db.session.delete(user_details)
     db.session.commit()
-    return {"message": "User Successfully Registered"}, 201
+    return {"message": "User Successfully deleted"}, 201
 
 

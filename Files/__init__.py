@@ -1,6 +1,9 @@
 from flask import Flask
 from Files.config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+
+ma=Marshmallow()
 
 db=SQLAlchemy()
 
@@ -17,7 +20,7 @@ def createApp(configClass = Config):
     # from Files.product.routes import product
     # app.register_blueprint(product)
 
-    # with app.app_context():
-    #     db.create_all()
+    with app.app_context():
+        db.create_all()
     
     return app

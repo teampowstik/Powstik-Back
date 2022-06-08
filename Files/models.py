@@ -1,5 +1,6 @@
+#from attr import fields
 from sqlalchemy.sql import func
-from Files import db
+from Files import db, ma
 
 class User (db.Model):
     __tablename__ = "User"
@@ -135,3 +136,74 @@ class Reviews (db.Model):
     pro_con_id = db.Column(db.Integer, 
                            db.ForeignKey("Consultant.consultant_id"), 
                            db.ForeignKey("Product.product_id"))
+
+
+class UserSchema(ma.Schema):
+    class Meta:
+        model = User
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'user_type')
+
+class CartSchema(ma.Schema):
+    class Meta:
+        model = Cart
+        fields = ('cart_id', 'customer_id', 'price', 'pro_con_id', 'quantity', 'item_type', 'item_total')
+
+class AddressSchema(ma.Schema):
+    class Meta:
+        model = Address
+        fields = ('address_id', 'line1', 'line2', 'city', 'state', 'country', 'zipcode', 'user_id')
+
+class OrderSchema(ma.Schema):
+    class Meta:
+        model = Order
+        fields = ('order_id', 'address_id', 'amount', 'date', 'customer_id')
+
+class Order_ItemsSchema(ma.Schema):
+    class Meta:
+        model = Order_Items
+        fields = ('table_sno', 'order_id', 'pro_con_id')
+
+class CategorySchema(ma.Schema):
+    class Meta:
+        model = Category
+        fields = ('category_id', 'category_name')
+
+class BelongsToCategorySchema(ma.Schema):
+    class Meta:
+        model = BelongsToCategory
+        fields = ('table_sno', 'category_id', 'pro_con_id')
+
+class ProductSchema(ma.Schema):
+    class Meta:
+        model = Product
+        fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products')
+
+class SellsSchema(ma.Schema):
+    class Meta:
+        model = Sells
+        fields = ('table_sno', 'seller_id', 'pro_con_id')
+
+class TrendingSchema(ma.Schema):
+    class Meta:
+        model = Trending
+        fields = ('trending_id', 'pro_con_id')
+
+class CouponsSchema(ma.Schema):
+    class Meta:
+        model = Coupons
+        fields = ('coupon_id', 'coupon_code', 'discount', 'limit', 'used', 'minimum_cart_value', 'cart_id')
+
+class ReviewsSchema(ma.Schema):
+    class Meta:
+        model = Reviews
+        fields = ('review_id', 'user_id', 'rating', 'review', 'review_for', 'pro_con_id')
+
+class ConsultantSchema(ma.Schema):
+    class Meta:
+        model = Consultant
+        fields = ('consultant_id', 'consultation_domain', 'cost')
+
+class SellerSchema(ma.Schema):
+    class Meta:
+        model = Seller
+        fields = ('seller_id', 'shop_name', 'shop_url')
