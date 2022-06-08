@@ -141,12 +141,12 @@ class Reviews (db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         model = User
-        fields = ('user_id', 'name', 'email', 'password', 'phone', 'address', 'orders', 'reviews')
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'user_type')
 
 class CartSchema(ma.Schema):
     class Meta:
         model = Cart
-        fields = ('cart_id', 'user_id', 'products')
+        fields = ('cart_id', 'customer_id', 'price', 'pro_con_id', 'quantity', 'item_type', 'item_total')
 
 class AddressSchema(ma.Schema):
     class Meta:
@@ -201,9 +201,9 @@ class ReviewsSchema(ma.Schema):
 class ConsultantSchema(ma.Schema):
     class Meta:
         model = Consultant
-        fields = ('consultant_id', 'name', 'email', 'password', 'phone', 'address', 'orders', 'reviews')
+        fields = ('consultant_id', 'consultation_domain', 'cost')
 
 class SellerSchema(ma.Schema):
     class Meta:
         model = Seller
-        fields = ('seller_id', 'name', 'email', 'password', 'phone', 'address', 'products', 'reviews')
+        fields = ('seller_id', 'shop_name', 'shop_url')
