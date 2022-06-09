@@ -28,31 +28,36 @@ def register():
     }), 201
 
 
-# @user.post('/login')
-# def login():
-#     email = request.json.get('email')
-#     password = request.json.get('password')
+@user.post('/login')
+def login():
+    email = request.json.get('email')
+    password = request.json.get('password')
 
-#     user=db.session.query(User).filter(User.email==email).first()
+    user=db.session.query(User).filter(User.email==email).first()
+    user_schema=UserSchema()
+    output = user_schema.dump(user)
 
-#     if user:
-#         is_pass_correct = check_password_hash(user.password, password)
+    if output:
+        is_pass_correct = check_password_hash(output["password"], password)
 
-#         if is_pass_correct:
-#             refresh = create_refresh_token(identity=user.user_id)
-#             access = create_access_token(identity=user.user_id)
+        if is_pass_correct:
+            refresh = create_refresh_token(identity=output["user_id"])
+            access = create_access_token(identity=output["user_id"])
 
-#             return jsonify({
-#                 'user': {
-#                     'refresh': refresh,
-#                     'access': access,
-#                     'email': user.email,
-#                 }
-#             })
+            return jsonify({
+                'user': {
+                    'refresh': refresh,
+                    'access': access,
+                    'email': output["email"],
+                }
+            })
 
-#         return jsonify({'password': user.password}), 401
+        return jsonify({'password': output["password"]}), 401
+    # print(output["password"])
 
-#     return jsonify({'message': 'Invalid credentials'}), 401
+    return jsonify(output), 404
+    
+    # return jsonify({'message': 'Invalid credentials'}), 401
 
 
 @user.post('/')
