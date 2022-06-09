@@ -19,54 +19,48 @@ def get_all_products():
     result=Product.query.all()
     product_schema=ProductSchema(many=True)
     output = product_schema.dump(result)
-    return jsonify(output)
+    return output
 
 def get_product_by_id(id):
     result=db.session.query(Product).filter(Product.product_id==id).first()
     if not result:
-        return {"message": "No product found"}, 404
+        return None
     product_schema=ProductSchema()
     output = product_schema.dump(result)
-    return jsonify(output)
+    return output
 
-def add_product():
-    if request.is_json:
-        product=Product(name=request.json['name'],description=request.json['description'],price=request.json['price'],
-            image=request.json['image'],discount=request.json['discount'],effective_price=float(request.json['price'])-(float(request.json['discount'])*float(request.json['price'])/100),
-            qty_left=request.json['qty_left'],category=request.json['category'],related_products=request.json['related_products'])
-        db.session.add(product)
-        db.session.commit()
-        return {"message": "Done"}, 201
+def add_product(name, description, price, image, discount, qty_left, category, related_products):
+    product=Product(name=name,description=description,price=price,image=image,
+        discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
+        qty_left=qty_left,category=category,related_products=related_products)
+    db.session.add(product)
+    db.session.commit()
+    return {"message": "Done"}, 201
 
-    return {"message": "Request must be JSON"}, 415
-
-def update_product(id):
-    if request.is_json:
-        product=db.session.query(Product).filter(Product.product_id==id).first()
-        if not product:
-            return {"message": "No product found"}, 404
-        
-        product.name=request.json['name']
-        product.description=request.json['description']
-        product.price=request.json['price']
-        product.image=request.json['image']
-        product.discount=request.json['discount']
-        product.effective_price=float(request.json['price'])-(float(request.json['discount'])*float(request.json['price'])/100)
-        product.qty_left=request.json['qty_left']
-        product.category=request.json['category']
-        product.related_products=request.json['related_products']
-        
-        db.session.add(product)
-        db.session.commit()
-
-        return {"message": "Done"}, 201
+def update_product(id, name, description, price, image, discount, qty_left, category, related_products):
+    product=db.session.query(Product).filter(Product.product_id==id).first()
+    if not product:
+        return None
     
-    return {"error": "Request must be JSON"}, 415
+    product.name=name
+    product.description=description
+    product.price=price
+    product.image=image
+    product.discount=discount
+    product.effective_price=float(price)-(float(discount)*float(price)/100)
+    product.qty_left=qty_left
+    product.category=category
+    product.related_products=related_products
+    
+    db.session.add(product)
+    db.session.commit()
+
+    return {"message": "Done"}, 202
 
 def remove_product(id):
     product=db.session.query(Product).filter(Product.product_id==id).first()
     if not product:
-        return {"message": "No product found"}, 404
+        return None
     db.session.delete(product)
     db.session.commit()
     return {"message": "Done"}, 200
