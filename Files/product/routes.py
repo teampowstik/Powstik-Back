@@ -1,73 +1,58 @@
-from flask import request, jsonify, Blueprint
-from flask_restful import abort, marshal_with
-from Files import db
-from ..models import Product, Category
-import json
+from flask import Blueprint, jsonify, request
+from .utils import get_all_products, get_product_by_id, add_product, update_product, remove_product
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
-from .utils import add_product_args, resource_fields
-
 @product.get('/')
-# @marshal_with(resource_fields)
 def get_products():
-    result=Product.query.all()
-    return jsonify(result)
+    result=get_all_products()
+    if result is None:
+       return {"message": "There are 0 products"}, 204
+    return jsonify(result), 200
 
 @product.get('/<int:id>')
-# @marshal_with(resource_fields)
 def get_product(id):
-    result=db.session.query(Product).filter(Product.product_id==id).first()
-    if not result:
-        return {"message": "No product find"}, 404
-    return jsonify(result)
+    result = get_product_by_id(id)
+    if result is None:
+        return {}, 204
+    return jsonify(result), 200
 
 @product.post('/')
-# @marshal_with(resource_fields)
-def add_product():
+def post_product():
     if request.is_json:
-        product=Product(name=request.json['name'],description=request.json['description'],price=request.json['price'],
-            image=request.json['image'],discount=request.json['discount'],effective_price=float(request.json['price'])-(float(request.json['discount'])*float(request.json['price'])/100),
-            qty_left=request.json['qty_left'],category=request.json['category'],related_products=request.json['related_products'])
-        db.session.add(product)
-        db.session.commit()
-        return {"message": "Dones"}, 201
+        name=request.json['name']
+        description=request.json['description']
+        price=request.json['price']
+        image=request.json['image']
+        discount=request.json['discount']
+        qty_left=request.json['qty_left']
+        category=request.json['category']
+        related_products=request.json['related_products']
+        add_product(name, description, price, image, discount, qty_left, category, related_products)
+        return {"message": "Done"}, 201
+    return {"message": "Request must be JSON"}, 415
+        
 
+@product.patch("/<int:id>")
+def patch_product(id):
+    if request.is_json:
+        name=request.json['name']
+        description=request.json['description']
+        price=request.json['price']
+        image=request.json['image']
+        discount=request.json['discount']
+        qty_left=request.json['qty_left']
+        category=request.json['category']
+        related_products=request.json['related_products']
+        res=update_product(id, name, description, price, image, discount, qty_left, category, related_products)
+        if res is None:
+            return {}, 204
+        return {"message": "Done"}, 202
     return {"message": "Request must be JSON"}, 415
 
-@product.post("/update/<int:id>")
-# @marshal_with(resource_fields)
-def modify_product(id):
-    #modify product details like price, etc.
-    if request.is_json:
-        product=db.session.query(Product).filter(Product.product_id==id).first()
-        if not product:
-            return {"message": "No product find"}, 404
-        args=add_product_args.parse_args()
-        
-        product.name=args['name']
-        product.desription=args['description']
-        product.price=args['price']
-        product.image=args['image']
-        product.discount=args['discount']
-        product.qty=args['qty_left']
-        product.category=args['category']
-        product.related_products=args['related_products']
-        
-        db.session.add(product)
-        db.session.commit()
-        return jsonify(product), 201
-    
-    return {"error": "Request must be JSON"}, 415
-    
-    
-@product.post("/delete/<int:id>")
-# @marshal_with(resource_fields)
+@product.delete("/<int:id>")
 def delete_product(id):
-    #delete specified product
-    product=db.session.query(Product).filter(Product.product_id==id).first()
-    if not product:
-        return {"message": "No product find"}, 404
-    db.session.delete(product)
-    db.session.commit()
-    return {"message": "Done"}, 404
+    res = remove_product(id)
+    if res is None:
+        return {}, 204
+    return {"message": "Done"}, 200
