@@ -2,6 +2,7 @@ from flask import Flask
 from Files.config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_jwt_extended import JWTManager
 
 ma=Marshmallow()
 
@@ -13,6 +14,8 @@ def createApp(configClass = Config):
 
     
     db.init_app(app)
+
+    JWTManager(app)
 
     from Files.user.routes import user
     app.register_blueprint(user)
