@@ -1,6 +1,7 @@
 from email.policy import HTTP
+from unittest import result
 from flask import Blueprint, jsonify, request
-from .utils import add_new_user, retrieve_all_users, retrieve_user_byID, remove_user
+from .utils import add_new_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from ..models import User, UserSchema
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -54,29 +55,56 @@ def login():
                 }
             })
 
-        return jsonify({'password': output["password"]}), 401
-    # print(output["password"])
+        return jsonify("Incorrect Password"), 401
 
-    return jsonify(output), 404
-    
-    # return jsonify({'message': 'Invalid credentials'}), 401
-
+    return jsonify("User Credentials Incorrect"), 404
 
 @user.post('/')
 def post_user():
-    return add_new_user()
+    if request.is_json:
+        first_name = request.json.get('first_name')
+        last_name = request.json.get('last_name')
+        email = request.json.get('email')
+        password = request.json.get('password')
+        phone = request.json.get('phone')
+        user_type = request.json.get('user_type')
+        add_new_user(first_name, last_name, email, password, phone, user_type)
+        return {"message": "User Successfully Added"}, 201
+    return {"message": "Request must be JSON"}, 415
+    # return add_new_user()
 
+@user.patch('/<int:user_id>')
+def patch_user(user_id):
+    if request.is_json:
+        first_name = request.json.get('first_name')
+        last_name = request.json.get('last_name')
+        email = request.json.get('email')
+        password = request.json.get('password')
+        phone = request.json.get('phone')
+        user_type = request.json.get('user_type')
+        res=update_user(user_id, first_name, last_name, email, password, phone, user_type)
+        if res is None:
+            return {"message": "User not found"}, 404
+        return {"message": "User Successfully Updated"}, 200
+    return {"message": "Request must be JSON"}, 415
 
 @user.get('/')
 def get_users():
-    return retrieve_all_users()
-
+    result = retrieve_all_users()
+    if result is None:
+        return jsonify({'message': 'No users found'}), 404
+    return jsonify(result)
 
 @user.get('/<int:user_id>')
 def get_user_byID(user_id):
-    return retrieve_user_byID(user_id)
-
+    result = retrieve_user_byID(user_id)
+    if result is None:
+        return jsonify({'message': 'No user found'}), 404
+    return jsonify(result)
 
 @user.delete("/<int:user_id>")
 def delete_user(user_id):
-    return remove_user(user_id)
+    result = remove_user(user_id)
+    if result is None:
+        return jsonify({'message': 'No user found'}), 404
+    return result
