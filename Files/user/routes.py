@@ -49,6 +49,8 @@ def login():
                     'refresh': refresh,
                     'access': access,
                     'email': output["email"],
+                    'entered password' : password,
+                    'hashed passord' : output["password"],
                 }
             })
 
