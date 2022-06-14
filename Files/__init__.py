@@ -19,6 +19,9 @@ def createApp(configClass = Config):
 
     from Files.product.routes import product
     app.register_blueprint(product)
+    
+    from Files.consultations.routes import consultation
+    app.register_blueprint(consultation)
 
     with app.app_context():
         db.create_all()
