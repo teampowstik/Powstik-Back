@@ -1,4 +1,5 @@
 #from attr import fields
+from pyexpat import model
 from sqlalchemy.sql import func
 from Files import db, ma
 
@@ -207,3 +208,8 @@ class SellerSchema(ma.Schema):
     class Meta:
         model = Seller
         fields = ('seller_id', 'shop_name', 'shop_url')
+
+class UserSellerSchema(ma.Schema):
+    class Meta:
+        model = User, Seller
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'user_type', 'shop_name', 'shop_url')

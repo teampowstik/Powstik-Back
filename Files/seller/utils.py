@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from Files import db
-from ..models import User, Seller, UserSchema, SellerSchema
+from ..models import User, Seller, UserSchema, SellerSchema, UserSellerSchema
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
@@ -44,8 +44,12 @@ def register_user(first_name, last_name, email, password, phone, user_type, shop
     return {"message" : "Seller Added"}, 201
     
 def retrieve_all_users():
-    #display all sellers alongwith information from user table and seller table
-    user_details = db.session.query(User,Seller).join(Seller,User.user_id==Seller.seller_id).all()
+    user_seller=db.session.query(User,Seller).join(Seller,User.user_id==Seller.seller_id).all()
+    user_seller_schema=UserSellerSchema(many=True)
+    output = user_seller_schema.dump(user_seller)
+    print(output)
+    return output
+
 
 
 def retrieve_user_byID(user_id):

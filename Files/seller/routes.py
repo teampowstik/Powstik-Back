@@ -41,7 +41,7 @@ def patch_user_password(user_id):
         return result
     return {"message": "Request must be JSON"}, 415
 
-@seller.patch('/<int:user_id>')
+@seller.patch('/update_details/<int:user_id>')
 def patch_user_details(user_id):
     if request.is_json:
         first_name = request.json.get('first_name')
