@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
 
+
 def login_user(email, password):
     user=db.session.query(User).filter(User.email==email).first()
     user_schema=UserSchema()
@@ -24,7 +25,6 @@ def login_user(email, password):
 
 
 def register_user(first_name, last_name, email, password, phone, user_type, shop_name, shop_url):
-
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
@@ -43,13 +43,18 @@ def register_user(first_name, last_name, email, password, phone, user_type, shop
     db.session.commit()
     return {"message" : "Seller Added"}, 201
     
-def retrieve_all_users():
-    user_seller=db.session.query(User,Seller).join(Seller,User.user_id==Seller.seller_id).all()
-    user_seller_schema=UserSellerSchema(many=True)
-    output = user_seller_schema.dump(user_seller)
-    print(output)
-    return output
 
+def retrieve_all_users():
+    sellers=db.session.query(Seller).all()
+    seller_schema=SellerSchema(many=True)
+    seller_output = seller_schema.dump(sellers)
+    for seller in seller_output:
+        user=db.session.query(User).filter(User.user_id==seller["seller_id"]).first()
+        user_schema=UserSchema()
+        output = user_schema.dump(user)
+        seller.update(output)
+
+    return seller_output
 
 
 def retrieve_user_byID(user_id):
@@ -63,6 +68,7 @@ def retrieve_user_byID(user_id):
     output_seller = seller_schema.dump(seller_details)
     return jsonify({"user": output_user, "seller": output_seller})
 
+
 def remove_user(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     seller_details=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
@@ -72,6 +78,7 @@ def remove_user(user_id):
     db.session.delete(seller_details)
     db.session.commit()
     return {"message": "User Successfully deleted"}, 201
+
 
 def update_user(user_id, first_name, last_name, email, password, phone, shop_name, shop_url):
     user=db.session.query(User).filter(User.user_id==user_id).first()
@@ -93,6 +100,7 @@ def update_user(user_id, first_name, last_name, email, password, phone, shop_nam
         return {"message": "User Successfully updated"}, 201        
     
     return "Incorrect Password"
+
 
 def change_password(user_id, old_password, new_password):
     user=db.session.query(User).filter(User.user_id==user_id).first()
