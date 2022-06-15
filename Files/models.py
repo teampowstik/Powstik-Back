@@ -10,7 +10,7 @@ class User (db.Model):
     email=db.Column(db.String(120),unique=True,nullable=False)
     password=db.Column(db.String(60),nullable=False)
     phone=db.Column(db.String(10),unique=True,nullable=False)
-    user_type=db.Column(db.String(20),nullable=False)
+    user_type=db.Column(db.String(20),nullable=False) #customer or seller
 
     def __repr__(self):
         return f"User('{self.user_id}','{self.first_name}','{self.user_type}')"
@@ -41,8 +41,9 @@ class Seller (db.Model):
 
 class Consultation (db.Model):
     __tablename__ = 'Consultation'
-    consultation_id = db.Column(db.Integer, db.ForeignKey("User.user_id"),primary_key=True)
+    consultation_id = db.Column(db.Integer, autoincrement = True, primary_key=True)
     consultation = db.Column(db.String(80), nullable=False)
+    consultant =  db.Column(db.String, nullable=False) 
     description = db.Column(db.String, nullable=False)
     availability = db.Column(db.String, nullable=False)
     image = db.Column(db.String, nullable=False)
@@ -53,8 +54,8 @@ class Consultation (db.Model):
     bio_data = db.Column(db.String, nullable=False)
 
 
-    def __repr__(self):
-        return f"User('{self.consultant_id}','{self.cost}')"
+    '''def __repr__(self):
+        return f"User('{self.consultation_id}','{self.cost}')"'''
     
 class Product (db.Model):
     __tablename__ = 'Product'
@@ -91,31 +92,24 @@ class Order_Items(db.Model):
     __tablename__ = "OrderItems"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
     order_id = db.Column(db.Integer, db.ForeignKey("Order.order_id"))
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
     
 class BelongsToCategory (db.Model):
     __tablename__ = "BelongsToCategory"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
     category_name = db.Column(db.String, nullable=False)
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))  
+    pro_con_id = db.Column(db.String, nullable=True)  
 
 class Sells (db.Model):
     __tablename__ = "Sells"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
+    
 class Trending (db.Model): 
     __tablename__ = "Trending"
     trending_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
     
     
 class Coupons (db.Model):
@@ -135,9 +129,7 @@ class Reviews (db.Model):
     rating = db.Column(db.Integer, nullable=False)
     review = db.Column(db.String(80), nullable=False)
     review_for = db.Column(db.String(10), nullable=False)
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
 
 
 class UserSchema(ma.Schema):
@@ -168,7 +160,7 @@ class Order_ItemsSchema(ma.Schema):
 class BelongsToCategorySchema(ma.Schema):
     class Meta:
         model = BelongsToCategory
-        fields = ('table_sno', 'category_id', 'category_name', 'pro_con_id')
+        fields = ('table_sno', 'category_name', 'pro_con_id')
 
 class ProductSchema(ma.Schema):
     class Meta:
@@ -198,7 +190,7 @@ class ReviewsSchema(ma.Schema):
 class ConsultationSchema(ma.Schema):
     class Meta:
         model = Consultation
-        fields = ('consultation_id', 'consultation', 'description', 'availability', 'image', 
+        fields = ('consultation_id', 'consultation', 'consultant', 'description', 'availability', 'image', 
                   'cost', 'discount', 'effective_price', 'related', 'bio_data')
 
 class SellerSchema(ma.Schema):

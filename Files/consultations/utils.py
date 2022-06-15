@@ -1,3 +1,4 @@
+import json
 from flask import jsonify
 from Files import db
 from ..models import Consultation, ConsultationSchema 
@@ -9,36 +10,106 @@ def get_all_consultations():
     output = consultation_schema.dump(result)
     return output
         
-def ConsultationByCategory(category_id):
-    initial = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==category_id).all()
+def ConsultationByCategory(category_name):
+    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).filter(BelongsToCategory.pro_con_id!=None).all()
     result = []
-    for init in initial:
-        consultation_schema = ConsultationSchema(many=False)
-        temp = consultation_schema.dump(init)
-        temp = jsonify(temp)
-        consultation = db.session.query(Consultation).filter(Consultation.consultation_id==temp["pro_con_id"]).first()
-        consultation_schema = ConsultationSchema(many=False)
-        consultation = consultation_schema.dump(consultation)
-        result.append(jsonify(consultation))
+    for record in records:
+        output = jsonify(
+            BelongsToCategorySchema(many=False).dump(record)
+        )
+        output= output.get_json()
+        output = output["pro_con_id"]
+        output = int(output[1:])
+        temp = db.session.query(Consultation).filter(Consultation.consultation_id==output).first()
+        consultation = ConsultationSchema(many=False).dump(temp)
+        result.append(
+            jsonify(consultation).get_json()
+        )
     return result
 
-def AddConsultation(consultation_id, consultation, description, availability, 
-                    image, cost, discount, related, bio_data, CategoryIDs):
+def AddConsultation(consultation, consultant, description, availability, 
+                    image, cost, discount, related, bio_data, CategoryNames):
     try:   
-        consultation = Consultation(consultation_id = consultation_id, consultation = consultation, 
+        result = db.session.query(Consultation).filter(Consultation.consultation==consultation).first()
+        if result:
+            return {"message":"Consultation Already Exists"}
+        result = Consultation(consultation = consultation, consultant=consultant,
                                     description = description, availability=availability, 
-                                    image=image, cost=cost, discount=discount, related=related, bio_data=bio_data
-                                    )
-        for CategoryID in CategoryIDs.split(","):
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_id == CategoryID).first()
-            BTCSchema = BelongsToCategory(many=False)
-            temp = BTCSchema.dump(temp)
-            BelongsTo = BelongsToCategory(category_id = CategoryID, 
-                                        category_name = temp["category_name"], 
-                                        pro_con_id = consultation_id)
-            db.session.add(BelongsTo)
-        db.session.add(consultation)
+                                    image=image, cost=cost, discount=discount, 
+                                    effective_price=float(cost)-(float(discount)*float(cost)/100),
+                                    related=related, bio_data=bio_data)
+        db.session.add(result)
+        #getting Consultation ID
+        temp = db.session.query(Consultation).filter(Consultation.consultation==
+                                                     consultation).filter(Consultation.consultant==consultant).first()
+        output = ConsultationSchema(many=False).dump(temp)
+        consultation_id = jsonify(output).json["consultation_id"]
+        consultation_id = "C" + str(consultation_id)
+        
+        for CategoryName in CategoryNames.split(","):
+            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
+            if not temp is None:
+                output = jsonify(
+                    BelongsToCategorySchema(many=False).dump(temp)
+                    )
+                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
+                                            pro_con_id = consultation_id)
+                db.session.add(BelongsTo)
+            else:
+                return {"message": "Wrong Category Entered"}, 400
         db.session.commit()
     except:
-        return {"message: Consultation not added", 400}
-    return {"message": "Done"}, 201
+        return {"message": "Consultation not added"}, 400
+    return {"message": "Done"}, 20
+
+def UpdateConsultation(consultation_id, consultation, consultant, description, 
+                        availability, image, cost, discount, related, bio_data, CategoryNames):
+    try:
+        #1. Update Consultation Table
+        result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
+        result.consultation = consultation
+        result.consultant = consultant
+        result.description = description
+        result.availability = availability
+        result.image = image
+        result.cost =cost
+        result.discount = discount
+        result.related =related
+        result.bio_data =bio_data
+        db.session.commit()
+        
+        #2. Delete Records from BelongsToCategory
+        records = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(consultation_id))
+        for record in records:
+            db.session.delete(record)
+        
+        #3. Adding new categories for the respective Consultation
+        consultation_id = "C" + str(consultation_id)
+        for CategoryName in CategoryNames.split(","):
+            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
+            if not temp is None:
+                output = jsonify(
+                    BelongsToCategorySchema(many=False).dump(temp)
+                    )
+                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
+                                            pro_con_id = consultation_id)
+                db.session.add(BelongsTo)
+            else:
+                return {"message": "Consultation Modified but Wrong Category(s) Entered"}, 400
+        db.session.commit()
+        return {"message": "Modified Consultation Details"}
+    except:
+        return {"message": "Patch Error"}
+        
+def RemoveConsultation(consultation_id):
+    try:
+        output = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
+        db.session.delete(output)
+        db.session.commit()
+        records = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(consultation_id))
+        for record in records:
+            db.session.delete(record)
+        db.session.commit()
+        return True
+    except:
+        return False

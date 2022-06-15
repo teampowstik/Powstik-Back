@@ -20,8 +20,8 @@ def createApp(configClass = Config):
     from Files.product.routes import product
     app.register_blueprint(product)
     
-    from Files.consultations.routes import consultation
-    app.register_blueprint(consultation)
+    from Files.consultations.routes import consultation_blueprint
+    app.register_blueprint(consultation_blueprint)
     
     from Files.category.routes import category_blueprint
     app.register_blueprint(category_blueprint)

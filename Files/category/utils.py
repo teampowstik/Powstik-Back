@@ -3,9 +3,8 @@ from flask import jsonify
 from ..models import BelongsToCategory, BelongsToCategorySchema
 
 def AllCategories():
-    result = BelongsToCategory.query.all()
-    BTCSchema =BelongsToCategorySchema(many=True)
-    output = BTCSchema.dump(result)
+    result = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==None).all()
+    output = BelongsToCategorySchema(many=True).dump(result)
     return output
 
 def AddCategory(category_name):
