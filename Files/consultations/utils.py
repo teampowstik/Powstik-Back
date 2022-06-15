@@ -60,7 +60,7 @@ def AddConsultation(consultation, consultant, description, availability,
         db.session.commit()
     except:
         return {"message": "Consultation not added"}, 400
-    return {"message": "Done"}, 20
+    return {"message": "Done"}, 200
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
                         availability, image, cost, discount, related, bio_data, CategoryNames):

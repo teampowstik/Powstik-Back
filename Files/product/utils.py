@@ -29,10 +29,10 @@ def get_product_by_id(id):
     output = product_schema.dump(result)
     return output
 
-def add_product(name, description, price, image, discount, qty_left, category, related_products):
+def add_product(name, description, price, image, discount, qty_left, category, related_products, seller_id):
     product=Product(name=name,description=description,price=price,image=image,
         discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
-        qty_left=qty_left,related_products=related_products)
+        qty_left=qty_left,related_products=related_products,seller_id=seller_id)
     db.session.add(product)
     db.session.commit()
     return {"message": "Done"}, 201

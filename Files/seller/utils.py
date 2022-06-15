@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from Files import db
-from ..models import User, Seller, UserSchema, SellerSchema, UserSellerSchema
+from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
@@ -115,3 +115,12 @@ def change_password(user_id, old_password, new_password):
         return {"message": "User Password Successfully changed"}, 201        
 
     return "Incorrect Password"
+
+def retrieve_products_by_seller(id):
+    seller=db.session.query(Seller).filter(Seller.seller_id==id).first()
+    if not seller:
+        return {"message": "Seller not found"}, 404
+    products=db.session.query(Product).filter(Product.seller_id==id).all()
+    product_schema=ProductSchema(many=True)
+    product_output = product_schema.dump(products)
+    return jsonify(product_output)

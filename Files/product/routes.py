@@ -28,7 +28,8 @@ def post_product():
         qty_left=request.json['qty_left']
         category=request.json['category']
         related_products=request.json['related_products']
-        add_product(name, description, price, image, discount, qty_left, category, related_products)
+        seller_id=request.json['seller_id']
+        add_product(name, description, price, image, discount, qty_left, category, related_products, seller_id)
         return {"message": "Done"}, 201
     return {"message": "Request must be JSON"}, 415
         

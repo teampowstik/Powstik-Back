@@ -69,6 +69,7 @@ class Product (db.Model):
     discount = db.Column(db.Integer, nullable = False)
     effective_price = db.Column(db.Integer, nullable = False)
     related_products = db.Column(db.String, nullable=True)
+    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
 class Address (db.Model):
     __tablename__ = 'Address'
@@ -101,12 +102,6 @@ class BelongsToCategory (db.Model):
     category_name = db.Column(db.String, nullable=False)
     pro_con_id = db.Column(db.String, nullable=True)  
 
-class Sells (db.Model):
-    __tablename__ = "Sells"
-    table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
-    pro_con_id = db.Column(db.String, nullable=True)
-    
 class Trending (db.Model): 
     __tablename__ = "Trending"
     trending_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
@@ -168,11 +163,6 @@ class ProductSchema(ma.Schema):
         model = Product
         fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products')
 
-class SellsSchema(ma.Schema):
-    class Meta:
-        model = Sells
-        fields = ('table_sno', 'seller_id', 'pro_con_id')
-
 class TrendingSchema(ma.Schema):
     class Meta:
         model = Trending
@@ -198,8 +188,3 @@ class SellerSchema(ma.Schema):
     class Meta:
         model = Seller
         fields = ('seller_id', 'shop_name', 'shop_url')
-
-class UserSellerSchema(ma.Schema):
-    class Meta:
-        model = User, Seller
-        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'user_type', 'shop_name', 'shop_url')
