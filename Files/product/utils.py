@@ -1,3 +1,4 @@
+from unicodedata import category
 from flask_restful import reqparse
 from flask import request, jsonify
 from Files import db
@@ -21,6 +22,23 @@ def get_all_products():
     output = product_schema.dump(result)
     return output
 
+def products_by_category(category_name):
+    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).filter(BelongsToCategory.pro_con_id!=None).all()
+    result = []
+    for record in records:
+        output = jsonify(
+            BelongsToCategorySchema(many=False).dump(record)
+        )
+        output= output.get_json()
+        output = output["pro_con_id"]
+        output = int(output[1:])
+        temp = db.session.query(Product).filter(Product.product_id==output).first()
+        consultation = ProductSchema(many=False).dump(temp)
+        result.append(
+            jsonify(consultation).get_json()
+        )
+    return result
+    
 def get_product_by_id(id):
     result=db.session.query(Product).filter(Product.product_id==id).first()
     if not result:
@@ -57,7 +75,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
                     BelongsToCategorySchema(many=False).dump(temp)
                     )
                 BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = consultation_id)
+                                            pro_con_id = product_id)
                 db.session.add(BelongsTo)
             else:
                 return {"message": "Wrong Category Entered"}, 400
@@ -66,10 +84,11 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     db.session.commit()
     return {"message": "Done"}, 201
 
-def update_product(id, name, description, price, image, discount, qty_left, category, related_products):
-    product=db.session.query(Product).filter(Product.product_id==id).first()
+def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products):
+    product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
-        return None
+        return {"message": "Product does not exist"}
+    
     #1. Update product table
     product.name=name
     product.description=description
@@ -78,10 +97,27 @@ def update_product(id, name, description, price, image, discount, qty_left, cate
     product.discount=discount
     product.effective_price=float(price)-(float(discount)*float(price)/100)
     product.qty_left=qty_left
-    product.category=category
     product.related_products=related_products
+    db.session.commit()
     
-    db.session.add(product)
+    #2. Delete Current Product Category Mapping
+    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="P"+str(product_id))
+    for record in records:
+        db.session.delete(record)
+    
+    # 3. Adding new Product Category Mapping
+    consultation_id = "P" + str(consultation_id)
+    for CategoryName in categories.split(","):
+        temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
+        if not temp is None:
+            output = jsonify(
+                BelongsToCategorySchema(many=False).dump(temp)
+                )
+            BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
+                                        pro_con_id = consultation_id)
+            db.session.add(BelongsTo)
+        else:
+            return {"message": "Product Modified but Wrong Category(s) Entered"}, 400
     db.session.commit()
 
     return {"message": "Done"}, 202

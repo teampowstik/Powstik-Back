@@ -31,7 +31,8 @@ def NewConsultation():
 def PatchConsultation(consultation_id):
     if request.is_json:
         res = request.get_json()
-        result = AddConsultation(*consultation_id, **res)
+        res['consultation_id'] = consultation_id
+        result = UpdateConsultation(**res)
         return result
     return {"message": "Request must be JSON"}, 415
         

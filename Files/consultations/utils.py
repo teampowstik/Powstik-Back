@@ -65,7 +65,7 @@ def AddConsultation(consultation, consultant, description, availability,
     return {"message": "Done"}, 200
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
-                        availability, image, cost, discount, related, bio_data, CategoryNames):
+                        availability, image, cost, discount, related, bio_data, categories):
     try:
         #1. Update Consultation Table
         result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
@@ -87,7 +87,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
-        for CategoryName in CategoryNames.split(","):
+        for CategoryName in categories.split(","):
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
                 output = jsonify(

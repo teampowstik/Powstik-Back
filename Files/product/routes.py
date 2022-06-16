@@ -1,5 +1,6 @@
+import json
 from flask import Blueprint, jsonify, request
-from .utils import get_all_products, get_product_by_id, add_product, update_product, remove_product
+from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
@@ -17,6 +18,13 @@ def get_product(id):
         return {}, 204
     return jsonify(result), 200
 
+@product.get('/bycategory/<string:category_name>')
+def get_product_by_category_name(category_name):
+    result = products_by_category(category_name)
+    if result is None:
+           return {"message": "There are 0 products under this category"}, 204
+    return json.dumps(result), 200
+
 @product.post('/')
 def post_product():
     if request.is_json:  
@@ -30,10 +38,9 @@ def post_product():
 def patch_product(product_id):
     if request.is_json:
         res = request.get_json()
-        result = update_product(*product_id, **res)
-        if result is None:
-            return {}, 204
-        return {"message": "Done"}, 202
+        res["product_id"] = product_id
+        result = update_product(**res)
+        return result
     return {"message": "Request must be JSON"}, 415
 
 @product.delete("/<int:product_id>")
