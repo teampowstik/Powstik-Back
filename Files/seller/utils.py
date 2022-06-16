@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from Files import db
-from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema
+from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema, Consultation, ConsultationSchema
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
@@ -126,3 +126,12 @@ def retrieve_products_by_seller(id):
     product_schema=ProductSchema(many=True)
     product_output = product_schema.dump(products)
     return jsonify(product_output)
+
+def retrieve_consultations_by_seller(id):
+    seller=db.session.query(Seller).filter(Seller.seller_id==id).first()
+    if not seller:
+        return {"message": "Seller not found"}, 404
+    consultations=db.session.query(Consultation).filter(Product.seller_id==id).all()
+    consultation_schema=ConsultationSchema(many=True)
+    consultation_output = consultation_schema.dump(consultations)
+    return jsonify(consultation_output)

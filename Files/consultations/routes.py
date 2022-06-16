@@ -11,11 +11,9 @@ def get_consultations():
            return {"message": "There are 0 consultations"}, 200
     return jsonify(result), 200
 
-@consultation_blueprint.get('bycategory')
-def GetConsultbyCategory():
-    result = ConsultationByCategory(
-        request.json["category"]
-        )
+@consultation_blueprint.get('bycategory/<string:category>')
+def GetConsultbyCategory(category):
+    result = ConsultationByCategory(category)
     if result is None:
            return {"message": "There are 0 consultations under this category"}, 204
     return json.dumps(result), 200
@@ -33,17 +31,18 @@ def NewConsultation():
             request.json['discount'], 
             request.json['related'], 
             request.json['bio_data'], 
-            request.json['categories']
+            request.json['categories'],
+            request.json['seller_id']
             )
         return result
     
     return {"message": "Request must be JSON"}, 415
 
-@consultation_blueprint.patch('/')
-def PatchConsultation():
+@consultation_blueprint.patch('/<int:id>')
+def PatchConsultation(id):
     if request.is_json:
         result =  UpdateConsultation(
-            request.json["consultation_id"],
+            id,
             request.json['consultation'],
             request.json['consultant'],
             request.json['description'],
@@ -59,11 +58,11 @@ def PatchConsultation():
     return {"message": "Request must be JSON"}, 415
         
 
-@consultation_blueprint.delete('/')
-def DeleteConsultation():
+@consultation_blueprint.delete('/<int:id>')
+def DeleteConsultation(id):
     if request.is_json:
         RemoveConsultation(
-            request.json["consultation_id"]
+            id
         )
         return {"message": "Deleted Consultation"}
     return {"message": "Request must be JSON"}, 415

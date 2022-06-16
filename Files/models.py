@@ -51,6 +51,7 @@ class Consultation (db.Model):
     effective_price = db.Column(db.Integer, nullable = False)
     related = db.Column(db.String, nullable=True)
     bio_data = db.Column(db.String, nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
 
     '''def __repr__(self):

@@ -1,7 +1,7 @@
 from email.policy import HTTP
 from flask import Blueprint, jsonify, request
 from sqlalchemy import false, true
-from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user, retrieve_products_by_seller
+from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user,retrieve_products_by_seller, retrieve_consultations_by_seller
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -83,4 +83,11 @@ def get_products(user_id):
     result = retrieve_products_by_seller(user_id)
     if result is None:
         return jsonify({'message': 'No products found'}), 404
+    return result
+
+@seller.get("/consultations/<int:user_id>")
+def get_consultations(user_id):
+    result = retrieve_consultations_by_seller(user_id)
+    if result is None:
+        return jsonify({'message': 'No consultations found'}), 404
     return result
