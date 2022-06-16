@@ -10,16 +10,18 @@ def login_user(email, password):
     user=db.session.query(User).filter(User.email==email).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
+    if output["user_type"] == "seller":
+        if output:
+            is_pass_correct = check_password_hash(output["password"], password)
 
-    if output:
-        is_pass_correct = check_password_hash(output["password"], password)
+            if is_pass_correct:
+                refresh = create_refresh_token(identity=output["user_id"])
+                access = create_access_token(identity=output["user_id"])
 
-        if is_pass_correct:
-            refresh = create_refresh_token(identity=output["user_id"])
-            access = create_access_token(identity=output["user_id"])
-
-            return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-        return "Incorrect Password"
+                return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
+            return "Incorrect Password"
+    else:
+        return "Not a Seller"
 
     return "User Credentials Incorrect"
 
