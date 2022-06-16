@@ -19,41 +19,26 @@ def get_product(id):
 
 @product.post('/')
 def post_product():
-    if request.is_json:
-        name=request.json['name']
-        description=request.json['description']
-        price=request.json['price']
-        image=request.json['image']
-        discount=request.json['discount']
-        qty_left=request.json['qty_left']
-        category=request.json['category']
-        related_products=request.json['related_products']
-        seller_id=request.json['seller_id']
-        add_product(name, description, price, image, discount, qty_left, category, related_products, seller_id)
-        return {"message": "Done"}, 201
+    if request.is_json:  
+        res = request.get_json()
+        result = add_product(**res)
+        return result
     return {"message": "Request must be JSON"}, 415
         
 
-@product.patch("/<int:id>")
-def patch_product(id):
+@product.patch("/<int:product_id>")
+def patch_product(product_id):
     if request.is_json:
-        name=request.json['name']
-        description=request.json['description']
-        price=request.json['price']
-        image=request.json['image']
-        discount=request.json['discount']
-        qty_left=request.json['qty_left']
-        category=request.json['category']
-        related_products=request.json['related_products']
-        res=update_product(id, name, description, price, image, discount, qty_left, category, related_products)
-        if res is None:
+        res = request.get_json()
+        result = update_product(*product_id, **res)
+        if result is None:
             return {}, 204
         return {"message": "Done"}, 202
     return {"message": "Request must be JSON"}, 415
 
-@product.delete("/<int:id>")
-def delete_product(id):
-    res = remove_product(id)
+@product.delete("/<int:product_id>")
+def delete_product(product_id):
+    res = remove_product(product_id)
     if res is None:
         return {}, 204
     return {"message": "Done"}, 200

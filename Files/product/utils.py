@@ -1,7 +1,7 @@
 from flask_restful import reqparse
 from flask import request, jsonify
 from Files import db
-from ..models import Product, ProductSchema
+from ..models import Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
 
 
 add_product_args = reqparse.RequestParser()
@@ -29,11 +29,40 @@ def get_product_by_id(id):
     output = product_schema.dump(result)
     return output
 
-def add_product(name, description, price, image, discount, qty_left, category, related_products, seller_id):
-    product=Product(name=name,description=description,price=price,image=image,
-        discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
-        qty_left=qty_left,related_products=related_products,seller_id=seller_id)
-    db.session.add(product)
+def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+    
+    result = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
+    if result:
+        return {"message":"Product Already Exists"}
+    #1. Adding Product
+    record=Product(name=name,description=description,price=price,image=image,
+                    discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
+                    qty_left=qty_left,related_products=related_products,seller_id=seller_id)
+    db.session.add(record)
+    
+    #2. Getting Prod ID
+    
+    temp = db.session.query(Product).filter(Product.name==
+                                                     name).filter(Product.seller_id==seller_id).first()
+    output = ProductSchema(many=False).dump(temp)
+    product_id = jsonify(output).json["product_id"]
+    product_id = "P" + str(product_id)
+        
+    #3. Adding Categories
+    
+    for CategoryName in categories.split(","):
+            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
+            if not temp is None:
+                output = jsonify(
+                    BelongsToCategorySchema(many=False).dump(temp)
+                    )
+                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
+                                            pro_con_id = consultation_id)
+                db.session.add(BelongsTo)
+            else:
+                return {"message": "Wrong Category Entered"}, 400
+    db.session.commit()
+    
     db.session.commit()
     return {"message": "Done"}, 201
 

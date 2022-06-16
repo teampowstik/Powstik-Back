@@ -28,9 +28,11 @@ def ConsultationByCategory(category_name):
     return result
 
 def AddConsultation(consultation, consultant, description, availability, 
-                    image, cost, discount, related, bio_data, CategoryNames, seller_id):
+                    image, cost, discount, related, bio_data, categories, seller_id):
     try:   
-        result = db.session.query(Consultation).filter(Consultation.consultation==consultation).first()
+        result = db.session.query(Consultation).filter(Consultation.consultation==
+                                                       consultation).filter(Consultation.seller_id==
+                                                                            seller_id).first()
         if result:
             return {"message":"Consultation Already Exists"}
         result = Consultation(consultation = consultation, consultant=consultant,
@@ -46,7 +48,7 @@ def AddConsultation(consultation, consultant, description, availability,
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
         
-        for CategoryName in CategoryNames.split(","):
+        for CategoryName in categories.split(","):
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
                 output = jsonify(

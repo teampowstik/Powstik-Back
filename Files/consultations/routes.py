@@ -21,48 +21,24 @@ def GetConsultbyCategory(category):
 @consultation_blueprint.post('/')
 def NewConsultation():
     if request.is_json:
-        result = AddConsultation(
-            request.json['consultation'], 
-            request.json['consultant'], 
-            request.json['description'], 
-            request.json['availability'], 
-            request.json['image'], 
-            request.json['cost'], 
-            request.json['discount'], 
-            request.json['related'], 
-            request.json['bio_data'], 
-            request.json['categories'],
-            request.json['seller_id']
-            )
+        res = request.get_json()
+        result = AddConsultation(**res)
         return result
     
     return {"message": "Request must be JSON"}, 415
 
-@consultation_blueprint.patch('/<int:id>')
-def PatchConsultation(id):
+@consultation_blueprint.patch('/<int:consultation_id>')
+def PatchConsultation(consultation_id):
     if request.is_json:
-        result =  UpdateConsultation(
-            id,
-            request.json['consultation'],
-            request.json['consultant'],
-            request.json['description'],
-            request.json['availability'],
-            request.json['image'],
-            request.json['cost'],
-            request.json['discount'],
-            request.json['related'],
-            request.json['bio_data'],
-            request.json['categories'] #csv of category_names
-        )
+        res = request.get_json()
+        result = AddConsultation(*consultation_id, **res)
         return result
     return {"message": "Request must be JSON"}, 415
         
 
-@consultation_blueprint.delete('/<int:id>')
-def DeleteConsultation(id):
+@consultation_blueprint.delete('/<int:consultation_id>')
+def DeleteConsultation(consultation_id):
     if request.is_json:
-        RemoveConsultation(
-            id
-        )
+        RemoveConsultation(consultation_id)
         return {"message": "Deleted Consultation"}
     return {"message": "Request must be JSON"}, 415
