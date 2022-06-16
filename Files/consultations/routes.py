@@ -1,12 +1,12 @@
 import json
 from flask import Blueprint, request, jsonify
-from .utils import get_all_consultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory
+from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory
 
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 
 @consultation_blueprint.get('/')
-def get_consultations():
-    result = get_all_consultations()
+def GetConsultations():
+    result = AllConsultations()
     if not result:
            return {"message": "There are 0 consultations"}, 200
     return jsonify(result), 200
@@ -33,7 +33,8 @@ def NewConsultation():
             request.json['discount'], 
             request.json['related'], 
             request.json['bio_data'], 
-            request.json['categories']
+            request.json['categories'],
+            request.json['seller_id']
             )
         return result
     

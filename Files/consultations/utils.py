@@ -4,7 +4,7 @@ from Files import db
 from ..models import Consultation, ConsultationSchema 
 from ..models import BelongsToCategory, BelongsToCategorySchema
 
-def get_all_consultations():
+def AllConsultations():
     result = Consultation.query.all()
     consultation_schema = ConsultationSchema(many=True)
     output = consultation_schema.dump(result)
@@ -28,7 +28,7 @@ def ConsultationByCategory(category_name):
     return result
 
 def AddConsultation(consultation, consultant, description, availability, 
-                    image, cost, discount, related, bio_data, CategoryNames):
+                    image, cost, discount, related, bio_data, CategoryNames, seller_id):
     try:   
         result = db.session.query(Consultation).filter(Consultation.consultation==consultation).first()
         if result:
@@ -37,7 +37,7 @@ def AddConsultation(consultation, consultant, description, availability,
                                     description = description, availability=availability, 
                                     image=image, cost=cost, discount=discount, 
                                     effective_price=float(cost)-(float(discount)*float(cost)/100),
-                                    related=related, bio_data=bio_data)
+                                    related=related, bio_data=bio_data, seller_id=seller_id)
         db.session.add(result)
         #getting Consultation ID
         temp = db.session.query(Consultation).filter(Consultation.consultation==

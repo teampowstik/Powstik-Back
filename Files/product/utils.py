@@ -41,7 +41,7 @@ def update_product(id, name, description, price, image, discount, qty_left, cate
     product=db.session.query(Product).filter(Product.product_id==id).first()
     if not product:
         return None
-    
+    #1. Update product table
     product.name=name
     product.description=description
     product.price=price
