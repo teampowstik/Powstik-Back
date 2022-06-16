@@ -9,6 +9,13 @@ def AllConsultations():
     consultation_schema = ConsultationSchema(many=True)
     output = consultation_schema.dump(result)
     return output
+
+def ConsultationByID(consultation_id):
+    result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
+    if not result:
+        return None
+    output = ConsultationSchema().dump(result)
+    return output
         
 def ConsultationByCategory(category_name):
     records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).filter(BelongsToCategory.pro_con_id!=None).all()

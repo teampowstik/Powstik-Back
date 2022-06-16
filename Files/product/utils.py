@@ -128,4 +128,4 @@ def remove_product(id):
         return None
     db.session.delete(product)
     db.session.commit()
-    return {"message": "Done"}, 200
+    return {"message": "Done"}, 204

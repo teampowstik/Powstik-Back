@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, request, jsonify
-from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory
+from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID
 
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 
@@ -10,6 +10,14 @@ def GetConsultations():
     if not result:
            return {"message": "There are 0 consultations"}, 200
     return jsonify(result), 200
+
+@consultation_blueprint.get('/<int:consultation_id>')
+def GetConsultationsbyID(consultation_id):
+    result = ConsultationByID(consultation_id)
+    if result is None:
+        return {}, 204
+    return jsonify(result), 200
+    return
 
 @consultation_blueprint.get('bycategory/<string:category>')
 def GetConsultbyCategory(category):
