@@ -4,7 +4,7 @@ from Files import db
 from ..models import Consultation, ConsultationSchema 
 from ..models import BelongsToCategory, BelongsToCategorySchema
 
-def get_all_consultations():
+def AllConsultations():
     result = Consultation.query.all()
     consultation_schema = ConsultationSchema(many=True)
     output = consultation_schema.dump(result)

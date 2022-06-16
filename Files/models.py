@@ -53,9 +53,8 @@ class Consultation (db.Model):
     bio_data = db.Column(db.String, nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
-
-    '''def __repr__(self):
-        return f"User('{self.consultation_id}','{self.cost}')"'''
+    def __repr__(self):
+        return f"User('{self.consultation_id}','{self.cost}')"
     
 class Product (db.Model):
     __tablename__ = 'Product'
