@@ -1,7 +1,7 @@
 from email.policy import HTTP
 from flask import Blueprint, jsonify, request
 from sqlalchemy import false, true
-from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user,retrieve_products_by_seller, retrieve_consultations_by_seller
+from .utils import change_password, login_seller, register_seller, retrieve_all_seller, retrieve_seller_byID, remove_seller, update_seller,retrieve_products_by_seller, retrieve_consultations_by_seller
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -13,10 +13,9 @@ def register():
         email = request.json.get('email')
         password = request.json.get('password')
         phone = request.json.get('phone')
-        user_type = request.json.get('user_type')
         shop_name = request.json.get('shop_name')
         shop_url = request.json.get('shop_url')
-        result = register_user(first_name, last_name, email, password, phone, user_type, shop_name, shop_url)
+        result = register_seller(first_name, last_name, email, password, phone, shop_name, shop_url)
         return result
     return {"message": "Request must be JSON"}, 415
     
@@ -25,7 +24,7 @@ def login():
     email = request.json.get('email')
     password = request.json.get('password')
 
-    result = login_user(email, password)
+    result = login_seller(email, password)
 
     if result is true:
         return result
@@ -51,7 +50,7 @@ def patch_user_details(user_id):
         phone = request.json.get('phone')
         shop_name = request.json.get('shop_name')
         shop_url = request.json.get('shop_url')
-        res = update_user(user_id, first_name, last_name, email, password, phone, shop_name, shop_url)
+        res = update_seller(user_id, first_name, last_name, email, password, phone, shop_name, shop_url)
         if res is None:
             return {"message": "User not found"}, 404
         return res
@@ -59,21 +58,21 @@ def patch_user_details(user_id):
 
 @seller.get('/')
 def get_users():
-    result = retrieve_all_users()
+    result = retrieve_all_seller()
     if result is None:
         return jsonify({'message': 'No users found'}), 404
     return jsonify(result)
 
 @seller.get('/<int:user_id>')
 def get_user_byID(user_id):
-    result = retrieve_user_byID(user_id)
+    result = retrieve_seller_byID(user_id)
     if result is None:
         return jsonify({'message': 'No user found'}), 404
     return result
 
 @seller.delete("/<int:user_id>")
 def delete_user(user_id):
-    result = remove_user(user_id)
+    result = remove_seller(user_id)
     if result is None:
         return jsonify({'message': 'No user found'}), 404
     return result

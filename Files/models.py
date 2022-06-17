@@ -12,7 +12,7 @@ class User (db.Model):
     is_seller=db.Column(db.Boolean,nullable=True, default = False) #customer (False) or seller (True)
 
     def __repr__(self):
-        return f"User('{self.user_id}','{self.first_name}','{self.user_type}')"
+        return f"User('{self.user_id}','{self.first_name}','{self.is_seller}')"
 
 class Cart (db.Model):
     __tablename__ = 'Cart'
@@ -129,7 +129,7 @@ class Reviews (db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         model = User
-        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'user_type')
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'is_seller')
 
 class CartSchema(ma.Schema):
     class Meta:
