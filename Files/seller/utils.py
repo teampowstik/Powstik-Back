@@ -2,7 +2,7 @@ from flask import request, jsonify
 from Files import db
 from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema, Consultation, ConsultationSchema
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 from sqlalchemy import or_
 
 

@@ -2,6 +2,7 @@ from email.policy import HTTP
 from flask import Blueprint, jsonify, request
 from sqlalchemy import false, true
 from .utils import change_password, login_seller, register_seller, retrieve_all_seller, retrieve_seller_byID, remove_seller, update_seller,retrieve_products_by_seller, retrieve_consultations_by_seller
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 

@@ -2,7 +2,7 @@ from unicodedata import category
 from flask_restful import reqparse
 from flask import request, jsonify
 from Files import db
-from ..models import Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
+from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
 
 
 add_product_args = reqparse.RequestParser()
@@ -15,6 +15,19 @@ add_product_args.add_argument('qty_left', type=int, required=True, help='Product
 add_product_args.add_argument('category', type=int, required=True, help='Product category cannot be blank!')
 add_product_args.add_argument('related_products', type=str, required=True, help='Product related products cannot be blank!')
 
+def check_product_seller_relation(product_id, seller_id):
+    result=db.session.query(Product).filter(Product.product_id==product_id).filter(Product.seller_id==seller_id).first()
+    if not result:
+        return False
+    return True
+
+def check_is_seller(seller_id):
+    result=db.session.query(User).filter(User.user_id==seller_id).first()
+    user_schema=UserSchema()
+    output = user_schema.dump(result)
+    if output["is_seller"] == True:
+        return True
+    return False    
 
 def get_all_products():
     result=Product.query.all()
@@ -49,6 +62,9 @@ def get_product_by_id(id):
 
 def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
     
+    if check_is_seller(seller_id) == False:
+        return {"message": "You are not a seller"}, 400
+
     result = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
     if result:
         return {"message":"Product Already Exists"}
@@ -60,8 +76,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     
     #2. Getting Prod ID
     
-    temp = db.session.query(Product).filter(Product.name==
-                                                     name).filter(Product.seller_id==seller_id).first()
+    temp = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
     output = ProductSchema(many=False).dump(temp)
     product_id = jsonify(output).json["product_id"]
     product_id = "P" + str(product_id)
@@ -79,12 +94,20 @@ def add_product(name, description, price, image, discount, qty_left, categories,
                 db.session.add(BelongsTo)
             else:
                 return {"message": "Wrong Category Entered"}, 400
+
     db.session.commit()
     
     db.session.commit()
     return {"message": "Done"}, 201
 
-def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products):
+def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+    
+    if check_is_seller(seller_id) == False:
+        return {"message": "You are not a seller"}, 400
+
+    if check_product_seller_relation(product_id, seller_id) == False:
+        return {"message": "You are not the seller of this product"}, 400
+
     product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
         return {"message": "Product does not exist"}
@@ -122,8 +145,15 @@ def update_product(product_id, name, description, price, image, discount, qty_le
 
     return {"message": "Done"}, 202
 
-def remove_product(id):
-    product=db.session.query(Product).filter(Product.product_id==id).first()
+def remove_product(product_id, seller_id):
+
+    if check_is_seller(seller_id) == False:
+        return {"message": "You are not a seller"}, 400
+
+    if check_product_seller_relation(product_id, seller_id) == False:
+        return {"message": "You are not the seller of this product. You cannot delete this product"}, 400
+
+    product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
         return None
     db.session.delete(product)
