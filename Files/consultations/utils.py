@@ -1,8 +1,8 @@
 import json
+from unittest import result
 from flask import jsonify
 from Files import db
-from ..models import Consultation, ConsultationSchema 
-from ..models import BelongsToCategory, BelongsToCategorySchema
+from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller
 
 def AllConsultations():
     result = Consultation.query.all()
@@ -11,11 +11,17 @@ def AllConsultations():
     return output
 
 def ConsultationByID(consultation_id):
-    result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
+    result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
     if not result:
         return None
-    output = ConsultationSchema().dump(result)
-    return output
+    categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(consultation_id))
+    result = ConsultationSchema(many=False).dump(result)
+    result["categories"] = []
+    for category in categories:
+        result["categories"].append(category.category_name)
+    return result
+
+
         
 def ConsultationByCategory(category_name):
     records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).filter(BelongsToCategory.pro_con_id!=None).all()
@@ -37,6 +43,9 @@ def ConsultationByCategory(category_name):
 def AddConsultation(consultation, consultant, description, availability, 
                     image, cost, discount, related, bio_data, categories, seller_id):
     try:   
+        seller_exists=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
+        if not seller_exists:
+            return {"message": "Seller doesn't exists"}
         result = db.session.query(Consultation).filter(Consultation.consultation==
                                                        consultation).filter(Consultation.seller_id==
                                                                             seller_id).first()
@@ -104,7 +113,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
                                             pro_con_id = consultation_id)
                 db.session.add(BelongsTo)
             else:
-                return {"message": "Consultation Modified but Wrong Category(s) Entered"}, 400
+                return {"message": "Consultation Modified but Wrong Category(s) Entered"}
         db.session.commit()
         return {"message": "Modified Consultation Details"}
     except:

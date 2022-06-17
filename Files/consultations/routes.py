@@ -8,7 +8,7 @@ consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consul
 def GetConsultations():
     result = AllConsultations()
     if not result:
-           return {"message": "There are 0 consultations"}, 200
+           return {"message": "There are 0 consultations"}, 204
     return jsonify(result), 200
 
 @consultation_blueprint.get('/<int:consultation_id>')
@@ -49,5 +49,5 @@ def PatchConsultation(consultation_id):
 def DeleteConsultation(consultation_id):
     if request.is_json:
         RemoveConsultation(consultation_id)
-        return {"message": "Deleted Consultation"}
+        return {"message": "Deleted Consultation"}, 200
     return {"message": "Request must be JSON"}, 415

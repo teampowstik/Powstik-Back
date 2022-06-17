@@ -6,27 +6,25 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
 
 
-def login_user(email, password):
+def login_seller(email, password):
     user=db.session.query(User).filter(User.email==email).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
-    if output["user_type"] == "seller":
-        if output:
+    if output:
+        if output["is_seller"] == True:
             is_pass_correct = check_password_hash(output["password"], password)
-
             if is_pass_correct:
                 refresh = create_refresh_token(identity=output["user_id"])
                 access = create_access_token(identity=output["user_id"])
 
                 return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-            return "Incorrect Password"
-    else:
-        return "Not a Seller"
+            return jsonify({"message":"Incorrect Password"})
+        else:
+            return jsonify({"message":"Not a Seller, Please login as a Customer"})
+    return jsonify({"message":"User Credentials Incorrect"})
 
-    return "User Credentials Incorrect"
 
-
-def register_user(first_name, last_name, email, password, phone, user_type, shop_name, shop_url):
+def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
@@ -37,16 +35,16 @@ def register_user(first_name, last_name, email, password, phone, user_type, shop
     password = request.json.get('password')
     pwd_hash = generate_password_hash(password)
 
-    user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, user_type = user_type)
+    user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = True)
     db.session.add(user)
-    user_id=db.session.query(User).filter(User.email==email).first().user_id
-    seller=Seller(shop_name=shop_name, shop_url=shop_url, seller_id=user_id)
+    seller_user_id=db.session.query(User).filter(User.email==email).first().user_id
+    seller=Seller(shop_name=shop_name, shop_url=shop_url, seller_id=seller_user_id)
     db.session.add(seller)
     db.session.commit()
     return {"message" : "Seller Added"}, 201
     
 
-def retrieve_all_users():
+def retrieve_all_sellers():
     sellers=db.session.query(Seller).all()
     seller_schema=SellerSchema(many=True)
     seller_output = seller_schema.dump(sellers)
@@ -55,11 +53,10 @@ def retrieve_all_users():
         user_schema=UserSchema()
         output = user_schema.dump(user)
         seller.update(output)
+    return jsonify(seller_output)
 
-    return seller_output
 
-
-def retrieve_user_byID(user_id):
+def retrieve_seller_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     seller_details=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
     if not user_details or not seller_details:
@@ -71,7 +68,7 @@ def retrieve_user_byID(user_id):
     return jsonify({"user": output_user, "seller": output_seller})
 
 
-def remove_user(user_id):
+def remove_seller(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     seller_details=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
     if not user_details or not seller_details:
@@ -82,7 +79,7 @@ def remove_user(user_id):
     return {"message": "User Successfully deleted"}, 201
 
 
-def update_user(user_id, first_name, last_name, email, password, phone, shop_name, shop_url):
+def update_seller(user_id, first_name, last_name, email, password, phone, shop_name, shop_url):
     user=db.session.query(User).filter(User.user_id==user_id).first()
     seller=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
     user_schema=UserSchema()

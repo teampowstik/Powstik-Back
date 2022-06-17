@@ -13,8 +13,7 @@ def register():
         email = request.json.get('email')
         password = request.json.get('password')
         phone = request.json.get('phone')
-        user_type = request.json.get('user_type')
-        result = register_user(first_name, last_name, email, password, phone, user_type)
+        result = register_user(first_name, last_name, email, password, phone)
         return result
     return {"message": "Request must be JSON"}, 415
     

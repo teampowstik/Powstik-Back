@@ -23,7 +23,7 @@ def login_user(email, password):
     return "User Credentials Incorrect"
 
 
-def register_user(first_name, last_name, email, password, phone, user_type):
+def register_user(first_name, last_name, email, password, phone):
 
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
     user_schema=UserSchema()
@@ -35,11 +35,12 @@ def register_user(first_name, last_name, email, password, phone, user_type):
     password = request.json.get('password')
     pwd_hash = generate_password_hash(password)
 
-    user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, user_type = user_type)
+    user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = False)
 
     db.session.add(user)
     db.session.commit()
-    return {"message" : "User Added"}, 201
+    
+    return {"message" : "User Registered as Customer"}, 201
     
 def retrieve_all_users():
     user_details = User.query.all()
