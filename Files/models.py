@@ -1,4 +1,3 @@
-#from attr import fields
 from sqlalchemy.sql import func
 from Files import db, ma
 
@@ -10,7 +9,7 @@ class User (db.Model):
     email=db.Column(db.String(120),unique=True,nullable=False)
     password=db.Column(db.String(60),nullable=False)
     phone=db.Column(db.String(10),unique=True,nullable=False)
-    user_type=db.Column(db.String(20),nullable=False)
+    is_seller=db.Column(db.Boolean,nullable=True, default = False) #customer (False) or seller (True)
 
     def __repr__(self):
         return f"User('{self.user_id}','{self.first_name}','{self.user_type}')"
@@ -21,7 +20,7 @@ class Cart (db.Model):
     customer_id=db.Column(db.Integer, db.ForeignKey("User.user_id"))
     price=db.Column(db.Numeric(10,2),nullable=False)
     pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
+                           db.ForeignKey("Consultation.consultation_id"), 
                            db.ForeignKey("Product.product_id"))
     quantity=db.Column(db.Integer,nullable=False)
     item_type=db.Column(db.String(20),nullable=False) # cart item or wishlist item 
@@ -39,14 +38,36 @@ class Seller (db.Model):
     def __repr__(self):
         return f"User('{self.seller_id}','{self.shop_name}')"
 
-class Consultant (db.Model):
-    __tablename__ = 'Consultant'
-    consultant_id=db.Column(db.Integer, db.ForeignKey("User.user_id"),primary_key=True)
-    consultation_domain=db.Column(db.String(20),nullable=False)
-    cost=db.Column(db.Numeric(10,2),nullable=False)
+class Consultation (db.Model):
+    __tablename__ = 'Consultation'
+    consultation_id = db.Column(db.Integer, autoincrement = True, primary_key=True)
+    consultation = db.Column(db.String(80), nullable=False)
+    consultant =  db.Column(db.String, nullable=False) 
+    description = db.Column(db.String, nullable=False)
+    availability = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
+    cost = db.Column(db.Numeric(10,2),nullable=False)
+    discount = db.Column(db.Integer, nullable = False)
+    effective_price = db.Column(db.Integer, nullable = False)
+    related = db.Column(db.String, nullable=True)
+    bio_data = db.Column(db.String, nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
     def __repr__(self):
-        return f"User('{self.consultant_id}','{self.cost}')"
+        return f"User('{self.consultation_id}','{self.cost}')"
+    
+class Product (db.Model):
+    __tablename__ = 'Product'
+    product_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    name = db.Column(db.String(80), nullable=False)
+    qty_left = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    price = db.Column(db.Integer, nullable = False)
+    discount = db.Column(db.Integer, nullable = False)
+    effective_price = db.Column(db.Integer, nullable = False)
+    related_products = db.Column(db.String, nullable=True)
+    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
 class Address (db.Model):
     __tablename__ = 'Address'
@@ -71,49 +92,18 @@ class Order_Items(db.Model):
     __tablename__ = "OrderItems"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
     order_id = db.Column(db.Integer, db.ForeignKey("Order.order_id"))
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
-                           db.ForeignKey("Product.product_id"))
-    
-class Category (db.Model):
-    __tablename__ = 'Category'
-    category_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
-    category_name = db.Column(db.String, nullable=False)
+    pro_con_id = db.Column(db.String, nullable=True)
     
 class BelongsToCategory (db.Model):
-    __tablename__ = "BelongsToCategoryRel"
+    __tablename__ = "BelongsToCategory"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    category_id = db.Column(db.Integer, db.ForeignKey('Category.category_id'))
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
-                           db.ForeignKey("Product.product_id"))
+    category_name = db.Column(db.String, nullable=False)
+    pro_con_id = db.Column(db.String, nullable=True)  
 
-class Product (db.Model):
-    __tablename__ = 'Product'
-    product_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
-    name = db.Column(db.String(80), nullable=False)
-    qty_left = db.Column(db.String, nullable=False)
-    image = db.Column(db.String, nullable=False)
-    description = db.Column(db.String, nullable=False)
-    price = db.Column(db.Integer, nullable = False)
-    discount = db.Column(db.Integer, nullable = False)
-    effective_price = db.Column(db.Integer, nullable = False)
-    category = db.Column(db.Integer, db.ForeignKey('Category.category_id'))
-    related_products = db.Column(db.String, nullable=True)  
-
-class Sells (db.Model):
-    __tablename__ = "Sells"
-    table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
-                           db.ForeignKey("Product.product_id"))
 class Trending (db.Model): 
     __tablename__ = "Trending"
     trending_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
     
     
 class Coupons (db.Model):
@@ -133,9 +123,7 @@ class Reviews (db.Model):
     rating = db.Column(db.Integer, nullable=False)
     review = db.Column(db.String(80), nullable=False)
     review_for = db.Column(db.String(10), nullable=False)
-    pro_con_id = db.Column(db.Integer, 
-                           db.ForeignKey("Consultant.consultant_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
 
 
 class UserSchema(ma.Schema):
@@ -163,25 +151,15 @@ class Order_ItemsSchema(ma.Schema):
         model = Order_Items
         fields = ('table_sno', 'order_id', 'pro_con_id')
 
-class CategorySchema(ma.Schema):
-    class Meta:
-        model = Category
-        fields = ('category_id', 'category_name')
-
 class BelongsToCategorySchema(ma.Schema):
     class Meta:
         model = BelongsToCategory
-        fields = ('table_sno', 'category_id', 'pro_con_id')
+        fields = ('table_sno', 'category_name', 'pro_con_id')
 
 class ProductSchema(ma.Schema):
     class Meta:
         model = Product
         fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products')
-
-class SellsSchema(ma.Schema):
-    class Meta:
-        model = Sells
-        fields = ('table_sno', 'seller_id', 'pro_con_id')
 
 class TrendingSchema(ma.Schema):
     class Meta:
@@ -198,10 +176,11 @@ class ReviewsSchema(ma.Schema):
         model = Reviews
         fields = ('review_id', 'user_id', 'rating', 'review', 'review_for', 'pro_con_id')
 
-class ConsultantSchema(ma.Schema):
+class ConsultationSchema(ma.Schema):
     class Meta:
-        model = Consultant
-        fields = ('consultant_id', 'consultation_domain', 'cost')
+        model = Consultation
+        fields = ('consultation_id', 'consultation', 'consultant', 'description', 'availability', 'image', 
+                  'cost', 'discount', 'effective_price', 'related', 'bio_data')
 
 class SellerSchema(ma.Schema):
     class Meta:
