@@ -18,10 +18,10 @@ def login_seller(email, password):
                 access = create_access_token(identity=output["user_id"])
 
                 return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-            return "Incorrect Password"
+            return jsonify({"message":"Incorrect Password"})
         else:
-            return "Not a Seller, Please login as a Customer"
-    return "User Credentials Incorrect"
+            return jsonify({"message":"Not a Seller, Please login as a Customer"})
+    return jsonify({"message":"User Credentials Incorrect"})
 
 
 def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):
@@ -44,19 +44,16 @@ def register_seller(first_name, last_name, email, password, phone, shop_name, sh
     return {"message" : "Seller Added"}, 201
     
 
-def retrieve_all_seller():
-    sellers=db.session.query(User).filter(User.is_seller==True).all()
-    # seller_schema=SellerSchema(many=True)
-    # seller_output = seller_schema.dump(sellers)
-    # for seller in seller_output:
-    #     user=db.session.query(User).filter(User.user_id==seller["seller_id"]).first()
-    #     user_schema=UserSchema()
-    #     output = user_schema.dump(user)
-    #     seller.update(output)
-    user_schema=UserSchema(many=True)
-    seller_output = user_schema.dump(sellers)
-
-    return seller_output
+def retrieve_all_sellers():
+    sellers=db.session.query(Seller).all()
+    seller_schema=SellerSchema(many=True)
+    seller_output = seller_schema.dump(sellers)
+    for seller in seller_output:
+        user=db.session.query(User).filter(User.user_id==seller["seller_id"]).first()
+        user_schema=UserSchema()
+        output = user_schema.dump(user)
+        seller.update(output)
+    return jsonify(seller_output)
 
 
 def retrieve_seller_byID(user_id):

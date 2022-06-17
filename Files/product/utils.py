@@ -2,7 +2,7 @@ from unicodedata import category
 from flask_restful import reqparse
 from flask import request, jsonify
 from Files import db
-from ..models import Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
+from ..models import Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema, Seller
 
 
 add_product_args = reqparse.RequestParser()
@@ -40,15 +40,21 @@ def products_by_category(category_name):
     return result
     
 def get_product_by_id(id):
-    result=db.session.query(Product).filter(Product.product_id==id).first()
+    result = db.session.query(Product).filter(Product.product_id==id).first()
     if not result:
         return None
-    product_schema=ProductSchema()
-    output = product_schema.dump(result)
-    return output
+    categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="P"+str(id))
+    result = ProductSchema(many=False).dump(result)
+    result["categories"] = []
+    for category in categories:
+        result["categories"].append(category.category_name)
+    return result
 
 def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
     
+    seller_exists=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
+    if not seller_exists:
+        return {"message": "Seller doesn't exists"}
     result = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
     if result:
         return {"message":"Product Already Exists"}
