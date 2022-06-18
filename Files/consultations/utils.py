@@ -21,10 +21,11 @@ def ConsultationByID(consultation_id):
         result["categories"].append(category.category_name)
     return result
 
-
-        
 def ConsultationByCategory(category_name):
-    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).filter(BelongsToCategory.pro_con_id!=None).all()
+    records = db.session.query(BelongsToCategory).filter(
+        BelongsToCategory.category_name==category_name).filter(
+            BelongsToCategory.pro_con_id!=None).filter(
+                BelongsToCategory.pro_con_id.startswith('C')).all()
     result = []
     for record in records:
         output = jsonify(
