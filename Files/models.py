@@ -159,7 +159,7 @@ class BelongsToCategorySchema(ma.Schema):
 class ProductSchema(ma.Schema):
     class Meta:
         model = Product
-        fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products')
+        fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products','seller_id')
 
 class TrendingSchema(ma.Schema):
     class Meta:

@@ -33,6 +33,8 @@ def register_seller(first_name, last_name, email, password, phone, shop_name, sh
         return {"message": "Phone or Email already exists"}, 409
     
     password = request.json.get('password')
+    if (len(password)<=6 or len(password)>=20):
+        return {"message": "Password must be between 6 and 20 characters"}, 400
     pwd_hash = generate_password_hash(password)
 
     user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = True)
