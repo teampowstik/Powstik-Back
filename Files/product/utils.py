@@ -1,5 +1,3 @@
-from math import prod
-from unicodedata import category
 from flask_restful import reqparse
 from flask import request, jsonify
 from Files import db
@@ -117,7 +115,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
 
     product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
-        return {"message": "Product does not exist"}
+        return {"message": "Product does not exist"}, 204
     
     #1. Update product table
     product.name=name

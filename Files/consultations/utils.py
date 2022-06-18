@@ -2,7 +2,21 @@ import json
 from unittest import result
 from flask import jsonify
 from Files import db
-from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller
+from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
+
+def check_consultation_seller_relation(consultation_id, seller_id):
+    result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).filter(Consultation.seller_id==seller_id).first()
+    if not result:
+        return False
+    return True
+
+def check_is_seller(seller_id):
+    result=db.session.query(User).filter(User.user_id==seller_id).first()
+    user_schema=UserSchema()
+    output = user_schema.dump(result)
+    if output["is_seller"] == True:
+        return True
+    return False    
 
 def AllConsultations():
     result = Consultation.query.all()
@@ -44,9 +58,8 @@ def ConsultationByCategory(category_name):
 def AddConsultation(consultation, consultant, description, availability, 
                     image, cost, discount, related, bio_data, categories, seller_id):
     try:   
-        seller_exists=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
-        if not seller_exists:
-            return {"message": "Seller doesn't exists"}
+        if check_is_seller(seller_id) == False:
+            return {"message": "You are not a seller"}, 400
         result = db.session.query(Consultation).filter(Consultation.consultation==
                                                        consultation).filter(Consultation.seller_id==
                                                                             seller_id).first()
@@ -82,8 +95,13 @@ def AddConsultation(consultation, consultant, description, availability,
     return {"message": "Done"}, 200
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
-                        availability, image, cost, discount, related, bio_data, categories):
+                        availability, image, cost, discount, related, bio_data, categories, seller_id):
     try:
+        if check_is_seller(seller_id) == False:
+            return {"message": "You are not a seller"}, 400
+
+        if check_consultation_seller_relation(consultation_id, seller_id) == False:
+            return {"message": "You are not the seller of this consultation"}, 400
         #1. Update Consultation Table
         result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
         result.consultation = consultation
@@ -120,15 +138,24 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
     except:
         return {"message": "Patch Error"}
         
-def RemoveConsultation(consultation_id):
+def RemoveConsultation(consultation_id,seller_id):
     try:
         output = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
+        if output is None:
+            return {"message": "Consultation does not exist"}, 204
+
+        if check_is_seller(seller_id) == False:
+            return {"message": "You are not a seller"}, 400
+
+        if check_consultation_seller_relation(consultation_id, seller_id) == False:
+            return {"message": "You are not the seller of this consultation"}, 400
+
         db.session.delete(output)
         db.session.commit()
         records = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(consultation_id))
         for record in records:
             db.session.delete(record)
         db.session.commit()
-        return True
+        return {"message": "Consultation Removed"}, 200
     except:
-        return False
+        return {"message": "Consultation not removed"}, 400
