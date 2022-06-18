@@ -132,7 +132,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
         db.session.delete(record)
     
     # 3. Adding new Product Category Mapping
-    consultation_id = "P" + str(consultation_id)
+    product_id = "P" + str(product_id)
     for CategoryName in categories.split(","):
         temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
         if not temp is None:
@@ -140,7 +140,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
                 BelongsToCategorySchema(many=False).dump(temp)
                 )
             BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                        pro_con_id = consultation_id)
+                                        pro_con_id = product_id)
             db.session.add(BelongsTo)
         else:
             return {"message": "Product Modified but Wrong Category(s) Entered"}, 400
@@ -161,4 +161,4 @@ def remove_product(product_id, seller_id):
         return None
     db.session.delete(product)
     db.session.commit()
-    return {"message": "Done"}, 204
+    return {"message": "Done"}
