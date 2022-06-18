@@ -1,6 +1,7 @@
 import json
 from flask import Blueprint, request, jsonify
-from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID
+from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 
@@ -27,27 +28,35 @@ def GetConsultbyCategory(category):
     return json.dumps(result), 200
 
 @consultation_blueprint.post('/')
+@jwt_required()
 def NewConsultation():
     if request.is_json:
+        seller_id = get_jwt_identity()  
         res = request.get_json()
+        res['seller_id'] = seller_id
         result = AddConsultation(**res)
         return result
     
     return {"message": "Request must be JSON"}, 415
 
 @consultation_blueprint.patch('/<int:consultation_id>')
+@jwt_required()
 def PatchConsultation(consultation_id):
     if request.is_json:
+        seller_id = get_jwt_identity()  
         res = request.get_json()
         res['consultation_id'] = consultation_id
+        res['seller_id']=seller_id
         result = UpdateConsultation(**res)
         return result
     return {"message": "Request must be JSON"}, 415
         
 
 @consultation_blueprint.delete('/<int:consultation_id>')
+@jwt_required()
 def DeleteConsultation(consultation_id):
     if request.is_json:
-        RemoveConsultation(consultation_id)
-        return {"message": "Deleted Consultation"}, 200
+        seller_id = get_jwt_identity()
+        res=RemoveConsultation(consultation_id,seller_id)
+        return res
     return {"message": "Request must be JSON"}, 415

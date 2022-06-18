@@ -2,7 +2,7 @@ from flask import request, jsonify
 from Files import db
 from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema, Consultation, ConsultationSchema
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 from sqlalchemy import or_
 
 
@@ -17,11 +17,11 @@ def login_seller(email, password):
                 refresh = create_refresh_token(identity=output["user_id"])
                 access = create_access_token(identity=output["user_id"])
 
-                return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-            return jsonify({"message":"Incorrect Password"})
+                return {"status" : "logged in" , "access_token": access, "refresh_token": refresh}, 200
+            return {"message":"Incorrect Password"}, 400
         else:
-            return jsonify({"message":"Not a Seller, Please login as a Customer"})
-    return jsonify({"message":"User Credentials Incorrect"})
+            return {"message":"Not a Seller, Please login as a Customer"}, 400
+    return {"message":"User not found"}, 204
 
 
 def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):
@@ -33,6 +33,8 @@ def register_seller(first_name, last_name, email, password, phone, shop_name, sh
         return {"message": "Phone or Email already exists"}, 409
     
     password = request.json.get('password')
+    if (len(password)<=6 or len(password)>=20):
+        return {"message": "Password must be between 6 and 20 characters"}, 400
     pwd_hash = generate_password_hash(password)
 
     user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = True)
@@ -79,9 +81,9 @@ def remove_seller(user_id):
     return {"message": "User Successfully deleted"}, 201
 
 
-def update_seller(user_id, first_name, last_name, email, password, phone, shop_name, shop_url):
-    user=db.session.query(User).filter(User.user_id==user_id).first()
-    seller=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
+def update_seller(seller_id, first_name, last_name, email, password, phone, shop_name, shop_url):
+    user=db.session.query(User).filter(User.user_id==seller_id).first()
+    seller=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
 
@@ -101,8 +103,8 @@ def update_seller(user_id, first_name, last_name, email, password, phone, shop_n
     return "Incorrect Password"
 
 
-def change_password(user_id, old_password, new_password):
-    user=db.session.query(User).filter(User.user_id==user_id).first()
+def change_password(seller_id, old_password, new_password):
+    user=db.session.query(User).filter(User.user_id==seller_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
 
@@ -113,7 +115,7 @@ def change_password(user_id, old_password, new_password):
         db.session.commit()
         return {"message": "User Password Successfully changed"}, 201        
 
-    return "Incorrect Password"
+    return "Incorrect old Password"
 
 def retrieve_products_by_seller(id):
     seller=db.session.query(Seller).filter(Seller.seller_id==id).first()

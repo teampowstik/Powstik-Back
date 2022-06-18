@@ -18,9 +18,9 @@ def login_user(email, password):
             access = create_access_token(identity=output["user_id"])
 
             return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-        return "Incorrect Password"
+        return {"message":"Incorrect Password"}, 401
 
-    return "User Credentials Incorrect"
+    return {"message":"User not found"}, 204
 
 
 def register_user(first_name, last_name, email, password, phone):
@@ -33,6 +33,8 @@ def register_user(first_name, last_name, email, password, phone):
         return {"message": "Phone or Email already exists"}, 409
     
     password = request.json.get('password')
+    if (len(password)<=6 or len(password)>=20):
+        return {"message": "Password must be between 6 and 20 characters"}, 400
     pwd_hash = generate_password_hash(password)
 
     user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = False)
@@ -51,7 +53,7 @@ def retrieve_all_users():
 def retrieve_user_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     if not user_details:
-        return {"message": "User not found"}, 404
+        return {"message": "User not found"}, 204
     user_schema=UserSchema()
     output = user_schema.dump(user_details)
     return output

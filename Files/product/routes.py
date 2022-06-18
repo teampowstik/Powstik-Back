@@ -1,6 +1,7 @@
 import json
 from flask import Blueprint, jsonify, request
 from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 product = Blueprint('product', __name__, url_prefix='/product')
 
@@ -26,26 +27,33 @@ def get_product_by_category_name(category_name):
     return json.dumps(result), 200
 
 @product.post('/')
+@jwt_required()
 def post_product():
-    if request.is_json:  
+    if request.is_json:
+        seller_id = get_jwt_identity()  
         res = request.get_json()
-        result = add_product(**res)
+        result = add_product(**res, seller_id=seller_id)
         return result
     return {"message": "Request must be JSON"}, 415
         
 
 @product.patch("/<int:product_id>")
+@jwt_required()
 def patch_product(product_id):
     if request.is_json:
+        seller_id = get_jwt_identity()
         res = request.get_json()
         res["product_id"] = product_id
-        result = update_product(**res)
+        result = update_product(**res, seller_id=seller_id)
         return result
     return {"message": "Request must be JSON"}, 415
 
 @product.delete("/<int:product_id>")
+@jwt_required()
 def delete_product(product_id):
-    res = remove_product(product_id)
+    seller_id = get_jwt_identity()
+    res = remove_product(product_id, seller_id=seller_id)
     if res is None:
         return {}, 204
-    return {"message": "Done"}, 200
+    # return {"message": "Done"}, 200
+    return jsonify(res), 200
