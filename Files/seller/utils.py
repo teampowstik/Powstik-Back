@@ -17,11 +17,11 @@ def login_seller(email, password):
                 refresh = create_refresh_token(identity=output["user_id"])
                 access = create_access_token(identity=output["user_id"])
 
-                return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-            return jsonify({"message":"Incorrect Password"})
+                return {"status" : "logged in" , "access_token": access, "refresh_token": refresh}, 200
+            return {"message":"Incorrect Password"}, 400
         else:
-            return jsonify({"message":"Not a Seller, Please login as a Customer"})
-    return jsonify({"message":"User Credentials Incorrect"})
+            return {"message":"Not a Seller, Please login as a Customer"}, 400
+    return {"message":"User not found"}, 204
 
 
 def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):

@@ -132,11 +132,11 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
                                             pro_con_id = consultation_id)
                 db.session.add(BelongsTo)
             else:
-                return {"message": "Consultation Modified but Wrong Category(s) Entered"}
+                return {"message": "Consultation Modified but Wrong Category(s) Entered"}, 400
         db.session.commit()
-        return {"message": "Modified Consultation Details"}
+        return {"message": "Modified Consultation Details"}, 201
     except:
-        return {"message": "Patch Error"}
+        return {"message": "Patch Error"}, 400
         
 def RemoveConsultation(consultation_id,seller_id):
     try:

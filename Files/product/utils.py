@@ -72,7 +72,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
 
     result = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
     if result:
-        return {"message":"Product Already Exists"}
+        return {"message":"Product Already Exists"}, 409
     #1. Adding Product
     record=Product(name=name,description=description,price=price,image=image,
                     discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),

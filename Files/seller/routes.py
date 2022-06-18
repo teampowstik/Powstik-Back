@@ -28,7 +28,7 @@ def login():
     result = login_seller(email, password)
 
     if result is true:
-        return result, 200
+        return result
 
     return result
 
