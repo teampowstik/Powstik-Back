@@ -1,3 +1,4 @@
+from math import prod
 from unicodedata import category
 from flask_restful import reqparse
 from flask import request, jsonify
@@ -162,6 +163,10 @@ def remove_product(product_id, seller_id):
     product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
         return None
+    product_id = "P"+str(product_id)
+    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==product_id).all()
+    for record in records:
+        db.session.delete(record)
     db.session.delete(product)
     db.session.commit()
     return {"message": "Done"}
