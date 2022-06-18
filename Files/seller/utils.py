@@ -81,9 +81,9 @@ def remove_seller(user_id):
     return {"message": "User Successfully deleted"}, 201
 
 
-def update_seller(user_id, first_name, last_name, email, password, phone, shop_name, shop_url):
-    user=db.session.query(User).filter(User.user_id==user_id).first()
-    seller=db.session.query(Seller).filter(Seller.seller_id==user_id).first()
+def update_seller(seller_id, first_name, last_name, email, password, phone, shop_name, shop_url):
+    user=db.session.query(User).filter(User.user_id==seller_id).first()
+    seller=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
 
@@ -103,8 +103,8 @@ def update_seller(user_id, first_name, last_name, email, password, phone, shop_n
     return "Incorrect Password"
 
 
-def change_password(user_id, old_password, new_password):
-    user=db.session.query(User).filter(User.user_id==user_id).first()
+def change_password(seller_id, old_password, new_password):
+    user=db.session.query(User).filter(User.user_id==seller_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
 
@@ -115,7 +115,7 @@ def change_password(user_id, old_password, new_password):
         db.session.commit()
         return {"message": "User Password Successfully changed"}, 201        
 
-    return "Incorrect Password"
+    return "Incorrect old Password"
 
 def retrieve_products_by_seller(id):
     seller=db.session.query(Seller).filter(Seller.seller_id==id).first()

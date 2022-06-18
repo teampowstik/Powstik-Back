@@ -1,6 +1,7 @@
 from email.policy import HTTP
 from unittest import result
 from flask import Blueprint, jsonify, request
+import jwt
 from sqlalchemy import false, true
 from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -32,8 +33,12 @@ def login():
     return result, 404
 
 @user.patch('/change password/<int:user_id>')
+@jwt_required()
 def patch_user_password(user_id):
     if request.is_json:
+        jwt_user_id = get_jwt_identity()
+        if jwt_user_id != user_id:
+            return {"message": "You are not authorized to change this user's password"}, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
         result = change_password(user_id, old_password, new_password)
@@ -41,8 +46,12 @@ def patch_user_password(user_id):
     return {"message": "Request must be JSON"}, 415
 
 @user.patch('/user details/<int:user_id>')
+@jwt_required()
 def patch_user_details(user_id):
     if request.is_json:
+        jwt_user_id = get_jwt_identity()
+        if jwt_user_id != user_id:
+            return {"message": "You are not authorized to change this user's details"}, 401
         first_name = request.json.get('first_name')
         last_name = request.json.get('last_name')
         email = request.json.get('email')

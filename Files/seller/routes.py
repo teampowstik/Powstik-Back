@@ -32,18 +32,26 @@ def login():
 
     return result
 
-@seller.patch('/change_password/<int:user_id>')
-def patch_user_password(user_id):
+@seller.patch('/change_password/<int:seller_id>')
+@jwt_required()
+def patch_user_password(seller_id):
     if request.is_json:
+        jwt_seller_id = get_jwt_identity()
+        if jwt_seller_id != seller_id:
+            return {"message": "You are not authorized to change this seller's password"}, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
-        result = change_password(user_id, old_password, new_password)
+        result = change_password(seller_id, old_password, new_password)
         return result
     return {"message": "Request must be JSON"}, 415
 
-@seller.patch('/update_details/<int:user_id>')
-def patch_user_details(user_id):
+@seller.patch('/update_details/<int:seller_id>')
+@jwt_required()
+def patch_user_details(seller_id):
     if request.is_json:
+        jwt_seller_id = get_jwt_identity()
+        if jwt_seller_id != seller_id:
+            return {"message": "You are not authorized to change this seller's details"}, 401
         first_name = request.json.get('first_name')
         last_name = request.json.get('last_name')
         email = request.json.get('email')
@@ -51,7 +59,7 @@ def patch_user_details(user_id):
         phone = request.json.get('phone')
         shop_name = request.json.get('shop_name')
         shop_url = request.json.get('shop_url')
-        res = update_seller(user_id, first_name, last_name, email, password, phone, shop_name, shop_url)
+        res = update_seller(seller_id, first_name, last_name, email, password, phone, shop_name, shop_url)
         if res is None:
             return {"message": "User not found"}, 204
         return res
