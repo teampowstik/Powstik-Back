@@ -32,7 +32,8 @@ def post_product():
     if request.is_json:
         seller_id = get_jwt_identity()  
         res = request.get_json()
-        result = add_product(**res, seller_id=seller_id)
+        res['seller_id'] = seller_id
+        result = add_product(**res)
         return result
     return {"message": "Request must be JSON"}, 415
         
@@ -44,7 +45,8 @@ def patch_product(product_id):
         seller_id = get_jwt_identity()
         res = request.get_json()
         res["product_id"] = product_id
-        result = update_product(**res, seller_id=seller_id)
+        res['seller_id'] = seller_id
+        result = update_product(**res)
         return result
     return {"message": "Request must be JSON"}, 415
 
