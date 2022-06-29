@@ -5,7 +5,7 @@ from ..models import BelongsToCategory, BelongsToCategorySchema
 def AllCategories():
     result = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==None).all()
     output = BelongsToCategorySchema(many=True).dump(result)
-    return output
+    return {"result":output}
 
 def AddCategory(category_name):
     try:
