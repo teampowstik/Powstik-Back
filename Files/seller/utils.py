@@ -55,7 +55,7 @@ def retrieve_all_sellers():
         user_schema=UserSchema()
         output = user_schema.dump(user)
         seller.update(output)
-    return jsonify(seller_output)
+    return jsonify({"result":seller_output})
 
 
 def retrieve_seller_byID(user_id):

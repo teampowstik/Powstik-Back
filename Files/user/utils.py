@@ -48,7 +48,7 @@ def retrieve_all_users():
     user_details = User.query.all()
     user_schema=UserSchema(many=True)
     output = user_schema.dump(user_details)
-    return output
+    return {"result":output}
 
 def retrieve_user_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
