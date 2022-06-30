@@ -1,5 +1,3 @@
-import json
-from unittest import result
 from flask import jsonify
 from Files import db
 from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
@@ -78,7 +76,7 @@ def AddConsultation(consultation, consultant, description, availability,
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
         
-        for CategoryName in categories.split(","):
+        for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
                 output = jsonify(
@@ -122,7 +120,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
-        for CategoryName in categories.split(","):
+        for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
                 output = jsonify(
