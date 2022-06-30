@@ -12,6 +12,7 @@ CORS(consultation_blueprint)
 consultation_blueprint.config['CORS_HEADERS'] = 'Content-Type'
 
 @consultation_blueprint.get('/')
+@cross_origin()
 def GetConsultations():
     result = AllConsultations()
     if not result:
