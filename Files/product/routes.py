@@ -10,21 +10,21 @@ def get_products():
     result=get_all_products()
     if result is None:
        return {"message": "There are 0 products"}, 204
-    return jsonify(result), 200
+    return jsonify({"result": result}), 200
 
 @product.get('/<int:id>')
 def get_product(id):
     result = get_product_by_id(id)
     if result is None:
         return {}, 204
-    return jsonify(result), 200
+    return jsonify({"result": result}), 200
 
 @product.get('/bycategory/<string:category_name>')
 def get_product_by_category_name(category_name):
     result = products_by_category(category_name)
     if result is None:
            return {"message": "There are 0 products under this category"}, 204
-    return json.dumps(result), 200
+    return jsonify({"result": result}), 200
 
 @product.post('/')
 @jwt_required()
@@ -34,7 +34,7 @@ def post_product():
         res = request.get_json()
         res['seller_id'] = seller_id
         result = add_product(**res)
-        return result
+        return jsonify({"result": result}), 200
     return {"message": "Request must be JSON"}, 415
         
 
@@ -47,7 +47,7 @@ def patch_product(product_id):
         res["product_id"] = product_id
         res['seller_id'] = seller_id
         result = update_product(**res)
-        return result
+        return jsonify({"result": result}), 200
     return {"message": "Request must be JSON"}, 415
 
 @product.delete("/<int:product_id>")
@@ -58,4 +58,4 @@ def delete_product(product_id):
     if res is None:
         return {}, 204
     # return {"message": "Done"}, 200
-    return jsonify(res), 200
+    jsonify({"result": res}), 200
