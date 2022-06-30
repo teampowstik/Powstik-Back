@@ -1,6 +1,6 @@
 import json
 from unittest import result
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -8,9 +8,10 @@ consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consul
 
 @consultation_blueprint.get('/')
 def GetConsultations():
-    result = AllConsultations()
+    result = make_response(AllConsultations())
     if not result:
            return {"message": "There are 0 consultations"}, 204
+    result.headers['Access-Control-Allow-Origin'] = '*'
     return result, 200
 
 @consultation_blueprint.get('/<int:consultation_id>')
