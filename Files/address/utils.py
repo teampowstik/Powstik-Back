@@ -34,3 +34,32 @@ def retrieve_address_byUserID(user_id):
     address_schema=AddressSchema()
     output = address_schema.dump(address_details)
     return output
+
+def remove_address(user_id,address_id):
+    address_details=db.session.query(Address).filter(Address.address_id==address_id).first()
+    if not address_details:
+        return {"message": "Address not found"}, 204
+    address_schema=AddressSchema()
+    output = address_schema.dump(address_details)
+    if output["user_id"]==user_id:
+        db.session.delete(address_details)
+        db.session.commit()
+        return {"message": "Address removed"}, 201
+    return {"message": "Address and user details do not match"}, 204
+
+def update_address_util(user_id,address_id,line1,line2,city,state,country,zipcode):
+    address_details=db.session.query(Address).filter(Address.address_id==address_id).first()
+    if not address_details:
+        return {"message": "Address not found"}, 204
+    address_schema=AddressSchema()
+    output = address_schema.dump(address_details)
+    if output["user_id"]==user_id:
+        address_details.line1=line1
+        address_details.line2=line2
+        address_details.city=city
+        address_details.state=state
+        address_details.country=country
+        address_details.zipcode=zipcode
+        db.session.commit()
+        return {"message": "Address updated"}, 201
+    return {"message": "Address and user details do not match"}, 204
