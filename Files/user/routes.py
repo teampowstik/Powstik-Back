@@ -6,11 +6,9 @@ import json
 from sqlalchemy import false, true
 from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from flask_cors import CORS
 
 
 user = Blueprint('user', __name__, url_prefix='/user')
-CORS(user)
 
 @user.get('/test')
 def dummy_route():
