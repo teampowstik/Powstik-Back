@@ -14,7 +14,7 @@ consultation_blueprint.config['CORS_HEADERS'] = 'Content-Type'
 @consultation_blueprint.get('/')
 @cross_origin()
 def GetConsultations():
-    result = AllConsultations()
+    result = make_response(AllConsultations())
     if not result:
            return {"message": "There are 0 consultations"}, 204
     return jsonify(result), 200
