@@ -124,7 +124,7 @@ def retrieve_products_by_seller(id):
     products=db.session.query(Product).filter(Product.seller_id==id).all()
     product_schema=ProductSchema(many=True)
     product_output = product_schema.dump(products)
-    return product_output
+    return jsonify(product_output)
 
 def retrieve_consultations_by_seller(id):
     seller=db.session.query(Seller).filter(Seller.seller_id==id).first()
@@ -133,4 +133,4 @@ def retrieve_consultations_by_seller(id):
     consultations=db.session.query(Consultation).filter(Product.seller_id==id).all()
     consultation_schema=ConsultationSchema(many=True)
     consultation_output = consultation_schema.dump(consultations)
-    return consultation_output
+    return jsonify(consultation_output)
