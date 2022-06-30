@@ -33,10 +33,10 @@ def NewConsultation():
     if request.is_json:
         seller_id = get_jwt_identity()  
         res = request.get_json()
-        res['seller_id'] = seller_id
-        result = AddConsultation(**res)
-        return result
-    
+        if res['seller_id'] == seller_id:
+            return AddConsultation(**res), 200
+        else:
+            return {"message": "You are not the seller"}, 400
     return {"message": "Request must be JSON"}, 415
 
 @consultation_blueprint.patch('/<int:consultation_id>')
@@ -46,9 +46,10 @@ def PatchConsultation(consultation_id):
         seller_id = get_jwt_identity()  
         res = request.get_json()
         res['consultation_id'] = consultation_id
-        res['seller_id']=seller_id
-        result = UpdateConsultation(**res)
-        return result
+        if res['seller_id']==seller_id:  
+            return UpdateConsultation(**res), 200
+        else:
+            return {"message": "You are not the seller"}, 400
     return {"message": "Request must be JSON"}, 415
         
 

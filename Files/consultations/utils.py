@@ -1,5 +1,3 @@
-import json
-from unittest import result
 from flask import jsonify
 from Files import db
 from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
