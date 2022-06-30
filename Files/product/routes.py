@@ -10,14 +10,14 @@ def get_products():
     result=get_all_products()
     if result is None:
        return {"message": "There are 0 products"}, 204
-    return jsonify({"result": result}), 200
+    return result, 200
 
 @product.get('/<int:id>')
 def get_product(id):
     result = get_product_by_id(id)
     if result is None:
         return {}, 204
-    return jsonify({"result": result}), 200
+    return (result), 200
 
 @product.get('/bycategory/<string:category_name>')
 def get_product_by_category_name(category_name):
