@@ -3,7 +3,6 @@ from Files.config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager
-from flask_cors import CORS
 
 ma=Marshmallow()
 
@@ -12,7 +11,6 @@ db=SQLAlchemy()
 def createApp(configClass = Config):
     app = Flask(__name__)
     app.config.from_object(configClass)
-    CORS(app)
     
     db.init_app(app)
 
