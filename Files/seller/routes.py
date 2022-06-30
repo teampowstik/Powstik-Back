@@ -95,11 +95,11 @@ def get_products(user_id):
     result = retrieve_products_by_seller(user_id)
     if result is None:
         return jsonify({'message': 'No products found'}), 204
-    return result
+    return jsonify({"result": result})
 
 @seller.get("/consultations/<int:user_id>")
 def get_consultations(user_id):
     result = retrieve_consultations_by_seller(user_id)
     if result is None:
         return jsonify({'message': 'No consultations found'}), 204
-    return result
+    return jsonify({"result": result})

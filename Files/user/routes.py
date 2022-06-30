@@ -2,6 +2,7 @@ from email.policy import HTTP
 from unittest import result
 from flask import Blueprint, jsonify, request
 import jwt
+import json
 from sqlalchemy import false, true
 from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -81,8 +82,8 @@ def get_users():
 def get_user_byID(user_id):
     result = retrieve_user_byID(user_id)
     if result is None:
-        return jsonify({'message': 'No user found'}), 204
-    return jsonify(result)
+        return {'message': 'User not found'}, 204
+    return jsonify(result), 200
 
 @user.delete("/<int:user_id>")
 def delete_user(user_id):

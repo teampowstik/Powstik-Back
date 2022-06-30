@@ -53,7 +53,7 @@ def retrieve_all_users():
 def retrieve_user_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
     if not user_details:
-        return {"message": "User not found"}, 204
+        return {"message": "User not found"}
     user_schema=UserSchema()
     output = user_schema.dump(user_details)
     return output
