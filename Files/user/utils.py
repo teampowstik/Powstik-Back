@@ -22,7 +22,6 @@ def login_user(email, password):
 
     return {"message":"User not found"}, 204
 
-
 def register_user(first_name, last_name, email, password, phone):
 
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
@@ -48,7 +47,7 @@ def retrieve_all_users():
     user_details = User.query.all()
     user_schema=UserSchema(many=True)
     output = user_schema.dump(user_details)
-    return output
+    return {"result":output}
 
 def retrieve_user_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
