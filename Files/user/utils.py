@@ -22,7 +22,6 @@ def login_user(email, password):
 
     return {"message":"User not found"}, 204
 
-
 def register_user(first_name, last_name, email, password, phone):
 
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
