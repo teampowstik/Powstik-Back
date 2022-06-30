@@ -180,7 +180,7 @@ class ConsultationSchema(ma.Schema):
     class Meta:
         model = Consultation
         fields = ('consultation_id', 'consultation', 'consultant', 'description', 'availability', 'image', 
-                  'cost', 'discount', 'effective_price', 'related', 'bio_data', 'seller_id')
+                  'cost', 'discount', 'effective_price', 'related', 'bio_data')
 
 class SellerSchema(ma.Schema):
     class Meta:

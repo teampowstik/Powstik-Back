@@ -88,7 +88,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
         
     #3. Adding Categories
     
-    for CategoryName in categories:
+    for CategoryName in categories.split(","):
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
                 output = jsonify(
@@ -135,7 +135,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
     
     # 3. Adding new Product Category Mapping
     product_id = "P" + str(product_id)
-    for CategoryName in categories:
+    for CategoryName in categories.split(","):
         temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
         if not temp is None:
             output = jsonify(
