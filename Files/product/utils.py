@@ -32,7 +32,7 @@ def get_all_products():
     result=Product.query.all()
     product_schema=ProductSchema(many=True)
     output = product_schema.dump(result)
-    return output
+    return {"result":output}
 
 def products_by_category(category_name):
     records = db.session.query(BelongsToCategory).filter(

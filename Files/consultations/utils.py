@@ -20,7 +20,7 @@ def AllConsultations():
     result = Consultation.query.all()
     consultation_schema = ConsultationSchema(many=True)
     output = consultation_schema.dump(result)
-    return output
+    return {"result":output}
 
 def ConsultationByID(consultation_id):
     result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
