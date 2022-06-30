@@ -2,13 +2,14 @@ import json
 from flask import Blueprint, request, jsonify
 from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 
 CORS(consultation_blueprint)
 
+consultation_blueprint.config['CORS_HEADERS'] = 'Content-Type'
 
 @consultation_blueprint.get('/')
 def GetConsultations():
