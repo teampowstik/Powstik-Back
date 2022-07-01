@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 
 @consultation_blueprint.get('/')

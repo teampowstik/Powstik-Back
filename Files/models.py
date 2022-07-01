@@ -125,7 +125,6 @@ class Reviews (db.Model):
     review_for = db.Column(db.String(10), nullable=False)
     pro_con_id = db.Column(db.String, nullable=True)
 
-
 class UserSchema(ma.Schema):
     class Meta:
         model = User
