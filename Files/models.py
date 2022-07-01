@@ -87,12 +87,15 @@ class Order (db.Model):
     amount = db.Column(db.Integer,nullable=False)
     date = db.Column(db.DateTime(timezone=True), server_default = func.now())
     customer_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
+    status = db.Column(db.String(20), nullable=False)
     
 class Order_Items(db.Model):
     __tablename__ = "OrderItems"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
     order_id = db.Column(db.Integer, db.ForeignKey("Order.order_id"))
     pro_con_id = db.Column(db.String, nullable=True)
+    tracking_id=db.Column(db.String, nullable=True)
+    tracking_link=db.Column(db.String, nullable=True)
     
 class BelongsToCategory (db.Model):
     __tablename__ = "BelongsToCategory"
