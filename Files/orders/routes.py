@@ -13,6 +13,6 @@ def GetOrders(user_id):
     return jsonify(result), 200
 
 @orders_blueprint.post('/<int:user_id>')
-def addOrder(user_id):
+def PostOrder(user_id):
     
     return 
