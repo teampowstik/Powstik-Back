@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 
+
 @seller.post('/register')
 def register():
     if request.is_json:

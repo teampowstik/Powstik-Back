@@ -11,7 +11,6 @@ db=SQLAlchemy()
 def createApp(configClass = Config):
     app = Flask(__name__)
     app.config.from_object(configClass)
-
     
     db.init_app(app)
 

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from .utils import AllCategories, AddCategory, UpdateCategoryName, RemoveCategoryRecord
 
+
 category_blueprint = Blueprint("category", __name__, url_prefix="/category")
 
 @category_blueprint.get('/') #get all categories
