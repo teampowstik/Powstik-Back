@@ -3,11 +3,9 @@ from urllib import response
 from flask import Blueprint, jsonify, request
 from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_cors import CORS
 
 
 product = Blueprint('product', __name__, url_prefix='/product')
-CORS(product)
 
 @product.get('/')
 def get_products():
@@ -15,6 +13,7 @@ def get_products():
     if result is None:
        return {"message": "There are 0 products"}, 204
     response =  jsonify(result)
+    response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 200
 
 @product.get('/<int:id>')
@@ -62,5 +61,4 @@ def delete_product(product_id):
     res = remove_product(product_id, seller_id=seller_id)
     if res is None:
         return {}, 204
-    # return {"message": "Done"}, 200
     jsonify({"result": res}), 200
