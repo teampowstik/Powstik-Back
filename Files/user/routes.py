@@ -17,9 +17,9 @@ def register():
         password = request.json.get('password')
         phone = request.json.get('phone')
         result = register_user(first_name, last_name, email, password, phone)
-        response=result
+        response=jsonify(result)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response,200
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415
@@ -31,7 +31,7 @@ def login():
 
     response = login_user(email, password)
 
-    if result is true:
+    if response is true:
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
     response.headers.add("Access-Control-Allow-Origin", "*")
@@ -48,7 +48,7 @@ def patch_user_password(user_id):
             return response, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
-        response = change_password(user_id, old_password, new_password)
+        response = jsonify(change_password(user_id, old_password, new_password))
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
     response = jsonify({"message": "Request must be JSON"})
@@ -74,7 +74,7 @@ def patch_user_details(user_id):
             response = jsonify({"message": "User not found"})
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response, 204
-        response = res
+        response = jsonify(res)
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
     response = jsonify({"message": "Request must be JSON"})
@@ -110,6 +110,6 @@ def delete_user(user_id):
         response = jsonify({"message": "User not found"})
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 204
-    response = result
+    response = jsonify(result)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
