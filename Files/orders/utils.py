@@ -6,7 +6,7 @@ from flask import jsonify
 from ..models import Order, OrderSchema, Order_Items, Order_ItemsSchema
 from ..models import Cart, CartSchema, User, Address
 
-#Boolean Functions
+#Internal Functions
 def isOrderThere(order_id,user_id):
     return db.session.query(Order).filter(Order.order_id==order_id).filter(Order.customer_id==user_id).first() is not None
 
@@ -17,6 +17,12 @@ def isOrderItemThere(user_id, order_id, order_item_id):
     if not isOrderThere(order_id, user_id):
         return False
     return db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first() is not None
+
+@cors
+def isNotJson():
+    response=jsonify({"message":"Not a JSON"})
+    response.status_code=415
+    return response
 
 #Response Functions
 @cors
@@ -38,6 +44,10 @@ def AllOrdersByUser(id):
 
 @cors
 def OrderByID(order_id,user_id):
+    if not isOrderThere(order_id,user_id):
+        response=jsonify({"message":"Order Not Found"})
+        response.status_code=404
+        return response
     try:
         order=db.session.query(Order).filter(Order.order_id==order_id).filter(Order.customer_id==user_id).first()
         order=OrderSchema().dump(order)

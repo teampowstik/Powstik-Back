@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from .utils import AllOrdersByUser, OrderByID, OrderItemByID, AddOrder, UpdateOrder, UpdateOrderItem, RemoveOrderItem, RemoveOrder
+from .utils import AllOrdersByUser, OrderByID, OrderItemByID, AddOrder, UpdateOrder, UpdateOrderItem, RemoveOrderItem, RemoveOrder, isNotJson
 
 orders_blueprint = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -28,10 +28,7 @@ def PostOrder(user_id):
         response=AddOrder(**result)
         return response
     
-    response = jsonify({"message": "Request must be JSON"})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.status_code = 415
-    return response
+    return isNotJson()
 
 @orders_blueprint.patch('/<int:user_id>/<int:order_id>')
 def PatchOrder(user_id, order_id):
@@ -39,10 +36,7 @@ def PatchOrder(user_id, order_id):
         result=request.get_json()
         return UpdateOrder(user_id, order_id, result["address_id"]), 201
     
-    response = jsonify({"message": "Request must be JSON"})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.status_code = 415
-    return response
+    return isNotJson()
 
 @orders_blueprint.patch('/<int:user_id>/<int:order_id>/<int:order_item_id>')
 def PatchOrderItem(user_id, order_id, order_item_id):
@@ -54,37 +48,13 @@ def PatchOrderItem(user_id, order_id, order_item_id):
         
         return UpdateOrderItem(**result)
     
-    response = jsonify({"message": "Request must be JSON"})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.status_code = 415
-    return response
+    return isNotJson()
     
 @orders_blueprint.delete('/<int:user_id>/<int:order_id>/<int:order_item_id>')
 def DeleteOrderItem(user_id, order_id, order_item_id):
-    if request.is_json:
-        result=request.get_json()
-        result['order_id']=order_id
-        result['order_item_id']=order_item_id
-        result['user_id']=user_id
-        
-        return RemoveOrderItem(**result)
+    return RemoveOrderItem(user_id, order_id, order_item_id)
     
-    response = jsonify({"message": "Request must be JSON"})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.status_code = 415
-    return response
-
 @orders_blueprint.delete('/<int:user_id>/<int:order_id>')
 def DeleteOrder(user_id, order_id):
-    if request.is_json:
-        result=request.get_json()
-        result['order_id']=order_id
-        result['user_id']=user_id
-        
-        return RemoveOrder(**result)
-    
-    response = jsonify({"message": "Request must be JSON"})
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.status_code = 415
-    return response
+    return RemoveOrder(user_id, order_id)
     
