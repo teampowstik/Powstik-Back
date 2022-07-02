@@ -1,4 +1,5 @@
 from cgitb import reset
+from urllib import response
 from sqlalchemy import desc
 from Files import db, cors
 from flask import jsonify
@@ -11,6 +12,11 @@ def isOrderThere(order_id,user_id):
 
 def isAddressThere(address_id):
     return db.session.query(Address).filter(Address.address_id==address_id).first() is not None
+
+def isOrderItemThere(user_id, order_id, order_item_id):
+    if not isOrderThere(order_id, user_id):
+        return False
+    return db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first() is not None
 
 #Response Functions
 @cors
@@ -31,8 +37,31 @@ def AllOrdersByUser(id):
     return response
 
 @cors
-def OrderByID(id,user_id):
-    return
+def OrderByID(order_id,user_id):
+    try:
+        order=db.session.query(Order).filter(Order.order_id==order_id).filter(Order.customer_id==user_id).first()
+        order=OrderSchema().dump(order)
+        order["order_items"]=db.session.query(Order_Items).filter(Order_Items.order_id==order_id).all()
+        order["order_items"]=Order_ItemsSchema(many=True).dump(order["order_items"])
+        response=jsonify(order)
+        response.status_code=200
+    except Exception as e:
+        response=jsonify({"message":e})
+        response.status_code=404
+    return response
+
+
+@cors
+def OrderItemByID(user_id, order_id, order_item_id):
+    if not isOrderItemThere(user_id, order_id, order_item_id):
+        response=jsonify({"message":"Order Item Not Found"})
+        response.status_code=404
+        return response
+    order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first()
+    order_item=Order_ItemsSchema().dump(order_item)
+    response=jsonify(order_item)
+    response.status_code=200
+    return response
 
 @cors
 def AddOrder(user_id=None, address_id=None):
@@ -115,6 +144,51 @@ def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, track
         response.status_code=201
     except Exception as e:
         response=jsonify({"message":"Error updating order item"})
+        response.status_code=500
+    return response
+
+@cors
+def RemoveOrder(user_id, order_id):
+    if not isOrderThere(order_id, user_id):
+        response = jsonify({'message': 'Order not found'})
+        response.status_code=404
+        return response
+    try:
+        #Remove Order
+        order=db.session.query(Order).filter(Order.order_id==order_id).first()
+        db.session.delete(order)
+        #Remove Order Items
+        order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order_id).all()
+        for order_item in order_items:
+            db.session.delete(order_item)
+        #Commit after both orders and order items are deleted
+        db.session.commit()
+        response=jsonify({"message":"Order removed"})
+        response.status_code=200
+    except Exception as e:
+        response=jsonify({"message":"Error removing order"})
+        response.status_code=500
+    return response
+
+
+@cors
+def RemoveOrderItem(user_id, order_id, order_item_id):
+    if not isOrderThere(order_id, user_id):
+        response = jsonify({'message': 'Order not found'})
+        response.status_code=404
+        return response
+    if not isOrderItemThere(user_id, order_id, order_item_id):
+        response = jsonify({'message': 'Order item not found'})
+        response.status_code=404
+        return response
+    try:
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        db.session.delete(order_item)
+        db.session.commit()
+        response=jsonify({"message":"Order item removed"})
+        response.status_code=200
+    except Exception as e:
+        response=jsonify({"message":"Error removing order item"})
         response.status_code=500
     return response
     

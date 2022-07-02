@@ -1,8 +1,7 @@
-from unittest import result
-from urllib import response
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from .utils import isOrderThere, isAddressThere, AllOrdersByUser, AddOrder, UpdateOrder, UpdateOrderItem
+
+from .utils import AllOrdersByUser, OrderByID, OrderItemByID, AddOrder, UpdateOrder, UpdateOrderItem, RemoveOrderItem, RemoveOrder
 
 orders_blueprint = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -13,7 +12,13 @@ def GetOrders(user_id):
 
 @orders_blueprint.get('/<int:user_id>/<int:order_id>')
 def GetOrderByID(user_id, order_id):
-    return
+    order = OrderByID(user_id, order_id)
+    return order
+
+@orders_blueprint.get('/<int:user_id>/<int:order_id>/<int:item_id>')
+def GetOrderItemByID(user_id, order_id, item_id):
+    order_item = OrderItemByID(user_id, order_id, item_id)
+    return order_item
 
 @orders_blueprint.post('/<int:user_id>')
 def PostOrder(user_id):
@@ -48,6 +53,35 @@ def PatchOrderItem(user_id, order_id, order_item_id):
         result['user_id']=user_id
         
         return UpdateOrderItem(**result)
+    
+    response = jsonify({"message": "Request must be JSON"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.status_code = 415
+    return response
+    
+@orders_blueprint.delete('/<int:user_id>/<int:order_id>/<int:order_item_id>')
+def DeleteOrderItem(user_id, order_id, order_item_id):
+    if request.is_json:
+        result=request.get_json()
+        result['order_id']=order_id
+        result['order_item_id']=order_item_id
+        result['user_id']=user_id
+        
+        return RemoveOrderItem(**result)
+    
+    response = jsonify({"message": "Request must be JSON"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.status_code = 415
+    return response
+
+@orders_blueprint.delete('/<int:user_id>/<int:order_id>')
+def DeleteOrder(user_id, order_id):
+    if request.is_json:
+        result=request.get_json()
+        result['order_id']=order_id
+        result['user_id']=user_id
+        
+        return RemoveOrder(**result)
     
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
