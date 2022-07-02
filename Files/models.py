@@ -68,6 +68,9 @@ class Product (db.Model):
     effective_price = db.Column(db.Integer, nullable = False)
     related_products = db.Column(db.String, nullable=True)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
+    
+    def __repr__(self):
+        return f"User('P'+'{self.product_id}','{self.name}')"
 
 class Address (db.Model):
     __tablename__ = 'Address'
@@ -90,7 +93,7 @@ class Order (db.Model):
     
 class Order_Items(db.Model):
     __tablename__ = "OrderItems"
-    table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    order_items_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     order_id = db.Column(db.Integer, db.ForeignKey("Order.order_id"))
     pro_con_id = db.Column(db.String, nullable=True)
     quantity = db.Column(db.Integer,nullable=False)
