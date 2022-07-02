@@ -61,5 +61,4 @@ def delete_product(product_id):
     res = remove_product(product_id, seller_id=seller_id)
     if res is None:
         return {}, 204
-    # return {"message": "Done"}, 200
     jsonify({"result": res}), 200
