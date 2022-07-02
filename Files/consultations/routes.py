@@ -1,5 +1,3 @@
-import json
-from unittest import result
 from flask import Blueprint, request, jsonify
 from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -11,22 +9,34 @@ consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consul
 def GetConsultations():
     result = AllConsultations()
     if not result:
-           return {"message": "There are 0 consultations"}, 204
-    return result, 200
+        response = jsonify({'message': 'No consultations found'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 204
+    response =  result
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response, 200
 
 @consultation_blueprint.get('/<int:consultation_id>')
 def GetConsultationsbyID(consultation_id):
     result = ConsultationByID(consultation_id)
     if result is None:
-        return {}, 204
-    return jsonify(result), 200
+        response={}
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 204
+    response = jsonify(result)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response, 200
 
 @consultation_blueprint.get('bycategory/<string:category>')
 def GetConsultbyCategory(category):
     result = ConsultationByCategory(category)
     if result is None:
-           return {"message": "There are 0 consultations under this category"}, 204
-    return jsonify({"result": result}), 200 #json.dumps(result)
+        response={}
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 204
+    response = jsonify({"result": result})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response, 200
 
 @consultation_blueprint.post('/')
 @jwt_required()
@@ -36,10 +46,15 @@ def NewConsultation():
         res = request.get_json()
         if res['seller_id'] == seller_id:
             result = AddConsultation(**res)
-            return jsonify({"result": result}), 200
+            response = jsonify({"result": result})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 200
         else:
-            return {"message": "You are not the seller"}, 400
-    return {"message": "Request must be JSON"}, 415
+            response = jsonify({"message": "You are not authorized to add this consultation"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 401
+    response = jsonify({"message": "Request must be JSON"})
+    return response, 415
 
 @consultation_blueprint.patch('/<int:consultation_id>')
 @jwt_required()
@@ -50,10 +65,15 @@ def PatchConsultation(consultation_id):
         res['consultation_id'] = consultation_id
         if res['seller_id']==seller_id:  
             result = UpdateConsultation(**res)
-            return jsonify({"result": result}), 200
+            response = jsonify({"result": result})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 200
         else:
-            return {"message": "You are not the seller"}, 400
-    return {"message": "Request must be JSON"}, 415
+            response = jsonify({"message": "You are not authorized to update this consultation"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 401
+    response = jsonify({"message": "Request must be JSON"})
+    return response, 415
         
 
 @consultation_blueprint.delete('/<int:consultation_id>')
@@ -62,5 +82,13 @@ def DeleteConsultation(consultation_id):
     if request.is_json:
         seller_id = get_jwt_identity()
         result=RemoveConsultation(consultation_id,seller_id)
-        return jsonify({"result": result}), 200
-    return {"message": "Request must be JSON"}, 415
+        if result:
+            response = jsonify({"result": result})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 200
+        else:
+            response = jsonify({"message": "You are not authorized to delete this consultation"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response, 401
+    response = jsonify({"message": "Request must be JSON"})
+    return response, 415
