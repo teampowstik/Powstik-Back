@@ -1,6 +1,4 @@
 from cgitb import reset
-import re
-from urllib import response
 from sqlalchemy import desc
 from Files import db, cors
 from flask import jsonify
@@ -19,16 +17,30 @@ def isAddressThere(address_id):
 def AllOrdersByUser(id):
     orders=db.session.query(Order).filter(Order.customer_id==id).all()
     orders=OrderSchema(many=True).dump(orders)
+    if not orders:
+        response=jsonify({"message":"No Orders Found"})
+        response.status_code=404
+        return response
     # add order items to each order
     for order in orders:
         order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order["order_id"]).all()
         order_items=Order_ItemsSchema(many=True).dump(order_items)
         order["order_items"]=order_items
     response=jsonify(orders)
+    response.status_code=200
     return response
 
 @cors
+def OrderByID(id,user_id):
+    return
+
+@cors
 def AddOrder(user_id=None, address_id=None):
+    if not isAddressThere(address_id):
+            response = jsonify({'message': 'Address not found'})
+            response.status_code = 404
+            return response
+    
     items=db.session.query(Cart).filter(Cart.customer_id==user_id).all()
     items=CartSchema(many=True).dump(items)
     # add to order table:
@@ -53,30 +65,57 @@ def AddOrder(user_id=None, address_id=None):
         db.session.add(order_item)
     db.session.commit()
     response=jsonify({"message":"Order added"})
+    response.status_code=201
     return response
 
 @cors
 def UpdateOrder(user_id=None, order_id=None, address_id=None):
+    if not isOrderThere(order_id, user_id):
+        response = jsonify({'message': 'Order not found'})
+        response.status_code=404
+        return response
+    if not isAddressThere(address_id):
+        response = jsonify({'message': 'Address not found'})
+        response.status_code=404
+        return response
     if not user_id or not order_id or not address_id:
         response=jsonify({"message":"Missing user_id, order_id or address_id"})
-    order=db.session.query(Order).filter(Order.order_id==order_id).first()
-    order.address_id=address_id
-    db.session.commit()
-    response=jsonify({"message":"Address updated"})
+    try:
+        order=db.session.query(Order).filter(Order.order_id==order_id).first()
+        order.address_id=address_id
+        db.session.commit()
+        response=jsonify({"message":"Address updated"})
+        response.status_code=200
+    except:
+        response=jsonify({"message":"Error updating address"})
+        response.status_code=500
+    
     return response
+
 
 # for sellers to change status of the order
 @cors
 def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, tracking_number):
-    order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
-    order_item.status=status
-    # Processing
-    # In Transit
-    # Shipped
-    # Delivered
-    order_item.tracking_id=tracking_id
-    order_item.tracking_number=tracking_number
-    db.session.commit()
-    response=jsonify({"message":"Order item updated"})
+    if not isOrderThere(order_id, user_id):
+        response = jsonify({'message': 'Order not found'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.status_code=404
+        return response
+    try:
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        order_item.status=status
+        # Processing
+        # In Transit
+        # Shipped
+        # Delivered
+        order_item.tracking_id=tracking_id
+        order_item.tracking_number=tracking_number
+        db.session.commit()
+        response=jsonify({"message":"Order item updated"})
+        response.status_code=201
+    except Exception as e:
+        response=jsonify({"message":"Error updating order item"})
+        response.status_code=500
     return response
     
+        
