@@ -31,13 +31,8 @@ def createApp(configClass = Config):
     from Files.seller.routes import seller
     app.register_blueprint(seller)
 
-<<<<<<< HEAD
     from Files.orders.routes import orders_blueprint
     app.register_blueprint(orders_blueprint)
-=======
-    from Files.address.routes import address
-    app.register_blueprint(address)
->>>>>>> Ashwin
 
     with app.app_context():
         db.create_all()

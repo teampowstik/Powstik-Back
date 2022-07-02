@@ -1,9 +1,6 @@
 from flask import Blueprint, jsonify, request
-<<<<<<< HEAD
 import jwt
 import json
-=======
->>>>>>> Ashwin
 from sqlalchemy import false, true
 from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required

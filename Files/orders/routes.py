@@ -1,3 +1,4 @@
+import re
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import json
@@ -14,5 +15,9 @@ def GetOrders(user_id):
 
 @orders_blueprint.post('/<int:user_id>')
 def PostOrder(user_id):
-    
+    if request.is_json:
+        result = request.get_json()
+        result["user_id"]= user_id
+        result = AddOrder(**result)
+        return jsonify({"result": result}), 200
     return 
