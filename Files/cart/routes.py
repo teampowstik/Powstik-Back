@@ -61,15 +61,3 @@ def DeleteItem():
     response = delete_item(**res)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, response.status_code
-
-@cart_blueprint.post('/')
-@jwt_required()
-def AddToWishlist():
-    if request.is_json:
-        user_id = get_jwt_identity()
-        res = request.get_json()
-        res['customer_id'] = user_id
-        result = AddWishlist(**res)
-        return jsonify({"result": result}), 200
-    return {"message": "Request must be JSON"}, 415
-    
