@@ -1,5 +1,3 @@
-import json
-from urllib import response
 from flask import Blueprint, jsonify, request
 from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -38,7 +36,7 @@ def post_product():
         res = request.get_json()
         res['seller_id'] = seller_id
         result = add_product(**res)
-        return jsonify({"result": result}), 200
+        return result
     return {"message": "Request must be JSON"}, 415
         
 

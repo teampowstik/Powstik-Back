@@ -34,6 +34,12 @@ def createApp(configClass = Config):
     from Files.orders.routes import orders_blueprint
     app.register_blueprint(orders_blueprint)
 
+    from Files.cart.routes import cart_blueprint
+    app.register_blueprint(cart_blueprint)
+
+    from Files.wishlist.routes import wishlist_blueprint
+    app.register_blueprint(wishlist_blueprint)
+
     with app.app_context():
         db.create_all()
     
