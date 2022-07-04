@@ -20,7 +20,7 @@ def PostAddCategory():
     if request.is_json:
         category_name=request.json["category_name"]
         result = AddCategory(category_name)
-        response = result
+        response = jsonify(result)
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
     response = jsonify({"message": "Request must be JSON"})

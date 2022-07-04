@@ -68,6 +68,9 @@ class Product (db.Model):
     effective_price = db.Column(db.Integer, nullable = False)
     related_products = db.Column(db.String, nullable=True)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
+    
+    def __repr__(self):
+        return f"User('P'+'{self.product_id}','{self.name}')"
 
 class Address (db.Model):
     __tablename__ = 'Address'
@@ -90,9 +93,14 @@ class Order (db.Model):
     
 class Order_Items(db.Model):
     __tablename__ = "OrderItems"
-    table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    order_items_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     order_id = db.Column(db.Integer, db.ForeignKey("Order.order_id"))
     pro_con_id = db.Column(db.String, nullable=True)
+    quantity = db.Column(db.Integer,nullable=False)
+    price = db.Column(db.Numeric(10,2),nullable=False)
+    status = db.Column(db.String(20), nullable=True)
+    tracking_id = db.Column(db.String, nullable=False)
+    tracking_link = db.Column(db.String, nullable=True)
     
 class BelongsToCategory (db.Model):
     __tablename__ = "BelongsToCategory"
@@ -124,7 +132,6 @@ class Reviews (db.Model):
     review = db.Column(db.String(80), nullable=False)
     review_for = db.Column(db.String(10), nullable=False)
     pro_con_id = db.Column(db.String, nullable=True)
-
 
 class UserSchema(ma.Schema):
     class Meta:

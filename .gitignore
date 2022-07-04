@@ -3,7 +3,7 @@
 
 #DB related
 prod.py
-*.db
+.db
 
 #images
 images/
