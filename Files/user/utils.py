@@ -16,11 +16,15 @@ def login_user(email, password):
         if is_pass_correct:
             refresh = create_refresh_token(identity=output["user_id"])
             access = create_access_token(identity=output["user_id"])
-
-            return jsonify({"status" : "logged in" , "access_token": access, "refresh_token": refresh})
-        return {"message":"Incorrect Password"}, 401
-
-    return {"message":"User not found"}, 204
+            response=jsonify({"message": "User Successfully logged in", "refresh": refresh, "access": access})
+            response.status_code = 200
+            return response
+        response=jsonify({"message": "Incorrect Password"})
+        response.status_code = 401
+        return response
+    response=jsonify({"message": "User not found"})
+    response.status_code = 204
+    return response
 
 def register_user(first_name, last_name, email, password, phone):
 
@@ -29,11 +33,15 @@ def register_user(first_name, last_name, email, password, phone):
     output = user_schema.dump(user)
 
     if output:
-        return {"message": "Phone or Email already exists"}, 409
+        response=jsonify({"message": "User already exists"})
+        response.status_code = 409
+        return response
     
     password = request.json.get('password')
     if (len(password)<=6 or len(password)>=20):
-        return {"message": "Password must be between 6 and 20 characters"}, 400
+        response=jsonify({"message": "Password must be between 6 and 20 characters"})
+        response.status_code = 400
+        return response
     pwd_hash = generate_password_hash(password)
 
     user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = False)
@@ -41,7 +49,9 @@ def register_user(first_name, last_name, email, password, phone):
     db.session.add(user)
     db.session.commit()
     
-    return {"message" : "User Registered as Customer"}, 201
+    response=jsonify({"message": "User Successfully registered"})
+    response.status_code = 201
+    return response
     
 def retrieve_all_users():
     user_details = User.query.all()
@@ -79,9 +89,12 @@ def update_user(user_id, first_name, last_name, email, password, phone):
         user.phone=phone
 
         db.session.commit()
-        return {"message": "User Successfully updated"}, 201        
-    
-    return "Incorrect Password"
+        response=jsonify({"message": "User Successfully updated"})
+        response.status_code = 201
+        return response
+    response=jsonify({"message": "Incorrect Password"})
+    response.status_code = 401
+    return response
 
 def change_password(user_id, old_password, new_password):
     user=db.session.query(User).filter(User.user_id==user_id).first()
@@ -93,6 +106,9 @@ def change_password(user_id, old_password, new_password):
     if is_pass_correct:
         user.password = generate_password_hash(new_password)
         db.session.commit()
-        return {"message": "User Password Successfully changed"}, 201        
-
-    return "Incorrect Password"
+        response=jsonify({"message": "User Successfully updated"})
+        response.status_code = 201
+        return response
+    response=jsonify({"message": "Incorrect Password"})
+    response.status_code = 401
+    return response

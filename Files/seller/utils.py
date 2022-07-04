@@ -1,3 +1,4 @@
+from urllib import response
 from flask import request, jsonify
 from Files import db
 from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema, Consultation, ConsultationSchema
@@ -16,12 +17,19 @@ def login_seller(email, password):
             if is_pass_correct:
                 refresh = create_refresh_token(identity=output["user_id"])
                 access = create_access_token(identity=output["user_id"])
-
-                return {"status" : "logged in" , "access_token": access, "refresh_token": refresh}, 200
-            return {"message":"Incorrect Password"}, 400
+                response=jsonify({"message": "User Successfully logged in", "refresh": refresh, "access": access})
+                response.status_code = 200
+                return response
+            response = jsonify({"message": "Incorrect Password"})
+            response.status_code = 400
+            return response
         else:
-            return {"message":"Not a Seller, Please login as a Customer"}, 400
-    return {"message":"User not found"}, 204
+            response = jsonify({"message": "User is not a seller"})
+            response.status_code = 400
+            return response
+    response = jsonify({"message": "User not found"})
+    response.status_code = 204
+    return response
 
 
 def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):
@@ -30,11 +38,15 @@ def register_seller(first_name, last_name, email, password, phone, shop_name, sh
     output = user_schema.dump(user)
 
     if output:
-        return {"message": "Phone or Email already exists"}, 409
+        response = jsonify({"message": "User already exists"})
+        response.status_code = 400
+        return response
     
     password = request.json.get('password')
     if (len(password)<=6 or len(password)>=20):
-        return {"message": "Password must be between 6 and 20 characters"}, 400
+        response = jsonify({"message": "Password must be between 6 and 20 characters"})
+        response.status_code = 400
+        return response
     pwd_hash = generate_password_hash(password)
 
     user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = True)
@@ -43,7 +55,9 @@ def register_seller(first_name, last_name, email, password, phone, shop_name, sh
     seller=Seller(shop_name=shop_name, shop_url=shop_url, seller_id=seller_user_id)
     db.session.add(seller)
     db.session.commit()
-    return {"message" : "Seller Added"}, 201
+    response=jsonify({"message": "User Successfully registered"})
+    response.status_code = 201
+    return response
     
 
 def retrieve_all_sellers():
@@ -98,10 +112,12 @@ def update_seller(seller_id, first_name, last_name, email, password, phone, shop
         seller.shop_url=shop_url
 
         db.session.commit()
-        return {"message": "User Successfully updated"}, 201        
-    
-    return "Incorrect Password"
-
+        response=jsonify({"message": "User Successfully updated"})
+        response.status_code = 200
+        return response
+    response = jsonify({"message": "Incorrect Password"})
+    response.status_code = 400
+    return response
 
 def change_password(seller_id, old_password, new_password):
     user=db.session.query(User).filter(User.user_id==seller_id).first()
@@ -113,9 +129,12 @@ def change_password(seller_id, old_password, new_password):
     if is_pass_correct:
         user.password = generate_password_hash(new_password)
         db.session.commit()
-        return {"message": "User Password Successfully changed"}, 201        
-
-    return "Incorrect old Password"
+        response=jsonify({"message": "User Successfully updated"})
+        response.status_code = 200
+        return response
+    response = jsonify({"message": "Incorrect Password"})
+    response.status_code = 400
+    return response
 
 def retrieve_products_by_seller(id):
     seller=db.session.query(Seller).filter(Seller.seller_id==id).first()
