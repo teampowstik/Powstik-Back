@@ -12,7 +12,7 @@ def GetConsultations():
         response = jsonify({'message': 'No consultations found'})
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 204
-    response =  result
+    response = jsonify(result)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 200
 
