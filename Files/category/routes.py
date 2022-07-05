@@ -19,10 +19,9 @@ def GetAllCategories():
 def PostAddCategory():
     if request.is_json:
         category_name=request.json["category_name"]
-        result = AddCategory(category_name)
-        response = jsonify(result)
+        response = AddCategory(category_name)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 
@@ -33,7 +32,7 @@ def PatchName(name):
         res = UpdateCategoryName(name, new_name)
         response = res
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 

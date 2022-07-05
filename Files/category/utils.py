@@ -15,9 +15,13 @@ def AddCategory(category_name):
         result = BelongsToCategory(category_name = category_name, pro_con_id = None)
         db.session.add(result)
         db.session.commit()
-        return {'message': 'Category Added Successfully.'}, 200
+        response=jsonify({"message":"Category Added"})
+        response.status_code = 201
+        return response
     except:
-        return { 'message': 'Category not added.'}, 400
+        response=jsonify({"message":"Category Not Added"})
+        response.status_code = 400
+        return response
 
 
 def UpdateCategoryName(name, new_name):
@@ -26,12 +30,16 @@ def UpdateCategoryName(name, new_name):
     if result:
         result.category_name = new_name
         db.session.commit()
-        return {
+        response=jsonify({
             'message': 'Category Name Patched',
             'category-name': new_name
-        }
+        })
+        response.status_code = 200
+        return response
     else:
-        return {'message': 'Category Not Found'}
+        response=jsonify({"message":"Category Does Not Exist"})
+        response.status_code = 400
+        return response
 
 def RemoveCategoryRecord(CategoryName):
     try:

@@ -57,12 +57,16 @@ def AddConsultation(consultation, consultant, description, availability,
                     image, cost, discount, related, bio_data, categories, seller_id):
     try:   
         if check_is_seller(seller_id) == False:
-            return {"message": "You are not a seller"}, 400
+            response=jsonify({"message":"You are not a seller"})
+            response.status_code=400
+            return response
         result = db.session.query(Consultation).filter(Consultation.consultation==
                                                        consultation).filter(Consultation.seller_id==
                                                                             seller_id).first()
         if result:
-            return {"message":"Consultation Already Exists"}
+            response=jsonify({"message":"Consultation Already Exists"})
+            response.status_code=400
+            return response
         result = Consultation(consultation = consultation, consultant=consultant,
                                     description = description, availability=availability, 
                                     image=image, cost=cost, discount=discount, 
@@ -86,20 +90,30 @@ def AddConsultation(consultation, consultant, description, availability,
                                             pro_con_id = consultation_id)
                 db.session.add(BelongsTo)
             else:
-                return {"message": "Wrong Category Entered"}, 400
+                response=jsonify({"message":"Category Does Not Exist"})
+                response.status_code=400
+                return response
         db.session.commit()
     except:
-        return {"message": "Consultation not added"}, 400
-    return {"message": "Done"}, 200
+        response=jsonify({"message":"Consultation Not Added"})
+        response.status_code=400
+        return response
+    response=jsonify({"message":"Consultation Added"})
+    response.status_code=200
+    return response
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
                         availability, image, cost, discount, related, bio_data, categories, seller_id):
     try:
         if check_is_seller(seller_id) == False:
-            return {"message": "You are not a seller"}, 400
+            response=jsonify({"message":"You are not a seller"})
+            response.status_code=400
+            return response
 
         if check_consultation_seller_relation(consultation_id, seller_id) == False:
-            return {"message": "You are not the seller of this consultation"}, 400
+            response=jsonify({"message":"You are not the seller of this consultation"})
+            response.status_code=400
+            return response
         #1. Update Consultation Table
         result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
         result.consultation = consultation
@@ -130,23 +144,35 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
                                             pro_con_id = consultation_id)
                 db.session.add(BelongsTo)
             else:
-                return {"message": "Consultation Modified but Wrong Category(s) Entered"}, 400
+                response=jsonify({"message":"Category Does Not Exist"})
+                response.status_code=400
+                return response
         db.session.commit()
-        return {"message": "Modified Consultation Details"}, 201
+        response=jsonify({"message":"Consultation Updated"})
+        response.status_code=200
+        return response
     except:
-        return {"message": "Patch Error"}, 400
+        response=jsonify({"message":"Consultation Not Updated"})
+        response.status_code=400
+        return response
         
 def RemoveConsultation(consultation_id,seller_id):
     try:
         output = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
         if output is None:
-            return {"message": "Consultation does not exist"}, 204
+            response=jsonify({"message":"Consultation Does Not Exist"})
+            response.status_code=400
+            return response
 
         if check_is_seller(seller_id) == False:
-            return {"message": "You are not a seller"}, 400
+            response=jsonify({"message":"You are not a seller"})
+            response.status_code=400
+            return response
 
         if check_consultation_seller_relation(consultation_id, seller_id) == False:
-            return {"message": "You are not the seller of this consultation"}, 400
+            response=jsonify({"message":"You are not the seller of this consultation"})
+            response.status_code=400
+            return response
 
         db.session.delete(output)
         db.session.commit()
@@ -154,6 +180,10 @@ def RemoveConsultation(consultation_id,seller_id):
         for record in records:
             db.session.delete(record)
         db.session.commit()
-        return {"message": "Consultation Removed"}, 200
+        response=jsonify({"message":"Consultation Removed"})
+        response.status_code=200
+        return response
     except:
-        return {"message": "Consultation not removed"}, 400
+        response=jsonify({"message":"Consultation Not Removed"})
+        response.status_code=400
+        return response
