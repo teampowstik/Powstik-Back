@@ -1,5 +1,6 @@
 from Files import db
 from ..models import BelongsToCategory, BelongsToCategorySchema
+from flask import jsonify
 
 def AllCategories():
     result = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==None).all()

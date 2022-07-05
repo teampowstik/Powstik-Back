@@ -68,11 +68,15 @@ def get_product_by_id(id):
 def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
     
     if check_is_seller(seller_id) == False:
-        return {"message": "You are not a seller"}, 400
+        response=jsonify({"message": "You are not a seller"})
+        response.status_code=400
+        return response
 
     result = db.session.query(Product).filter(Product.name==name).filter(Product.seller_id==seller_id).first()
     if result:
-        return {"message":"Product Already Exists"}, 409
+        response=jsonify({"message": "Product already exists"})
+        response.status_code=400
+        return response
     #1. Adding Product
     record=Product(name=name,description=description,price=price,image=image,
                     discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
@@ -98,24 +102,34 @@ def add_product(name, description, price, image, discount, qty_left, categories,
                                         pro_con_id = product_id)
             db.session.add(BelongsTo)
         else:
-            return {"message": "Wrong Category Entered"}, 400
+            response=jsonify({"message": "Category does not exist"})
+            response.status_code=400
+            return response
 
     db.session.commit()
     
     db.session.commit()
-    return {"message": "Done"}, 201
+    response=jsonify({"message": "Product added successfully"})
+    response.status_code=201
+    return response
 
 def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products, seller_id):
     
     if check_is_seller(seller_id) == False:
-        return {"message": "You are not a seller"}, 400
+        response=jsonify({"message": "You are not a seller"})
+        response.status_code=400
+        return response
 
     if check_product_seller_relation(product_id, seller_id) == False:
-        return {"message": "You are not the seller of this product"}, 400
+        response=jsonify({"message": "You are not the seller of this product"})
+        response.status_code=400
+        return response
 
     product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
-        return {"message": "Product does not exist"}, 204
+        response=jsonify({"message": "Product does not exist"})
+        response.status_code=204
+        return response
     
     #1. Update product table
     product.name=name
@@ -145,18 +159,25 @@ def update_product(product_id, name, description, price, image, discount, qty_le
                                         pro_con_id = product_id)
             db.session.add(BelongsTo)
         else:
-            return {"message": "Product Modified but Wrong Category(s) Entered"}, 400
+            response=jsonify({"message": "Category does not exist"})
+            response.status_code=400
+            return response
     db.session.commit()
-
-    return {"message": "Done"}, 202
+    response=jsonify({"message": "Product updated successfully"})
+    response.status_code=202
+    return response
 
 def remove_product(product_id, seller_id):
 
     if check_is_seller(seller_id) == False:
-        return {"message": "You are not a seller"}, 400
+        response=jsonify({"message": "You are not a seller"})
+        response.status_code=400
+        return response
 
     if check_product_seller_relation(product_id, seller_id) == False:
-        return {"message": "You are not the seller of this product. You cannot delete this product"}, 400
+        response=jsonify({"message": "You are not the seller of this product"})
+        response.status_code=400
+        return response
 
     product=db.session.query(Product).filter(Product.product_id==product_id).first()
     if not product:
@@ -167,4 +188,6 @@ def remove_product(product_id, seller_id):
         db.session.delete(record)
     db.session.delete(product)
     db.session.commit()
-    return {"message": "Done"}
+    response=jsonify({"message": "Product removed successfully"})
+    response.status_code=202
+    return response

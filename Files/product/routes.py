@@ -43,10 +43,9 @@ def post_product():
         seller_id = get_jwt_identity()  
         res = request.get_json()
         res['seller_id'] = seller_id
-        result = add_product(**res)
-        response = jsonify({"result": result})
+        response = add_product(**res)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response, 200
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
         
@@ -59,10 +58,9 @@ def patch_product(product_id):
         res = request.get_json()
         res["product_id"] = product_id
         res['seller_id'] = seller_id
-        result = update_product(**res)
-        response = jsonify({"result": result})
+        response = update_product(**res)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response, 200
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 
@@ -75,6 +73,6 @@ def delete_product(product_id):
         response = jsonify({'message': 'No product found'})
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response, 204
-    response=jsonify({"result": res})
+    response=res
     response.headers.add("Access-Control-Allow-Origin", "*")
-    return response, 200
+    return response, response.status_code
