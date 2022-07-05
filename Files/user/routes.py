@@ -4,13 +4,13 @@ import json
 from sqlalchemy import false, true
 from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from flask_cors import cross_origin
-
+from flask_cors import cross_origin,CORS
 
 user = Blueprint('user', __name__, url_prefix='/user')
+cors = CORS(user, resources={r"/foo": {"origins": "*"}})
 
-@cross_origin()
 @user.post('/register')
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def register():
     if request.is_json:
         first_name = request.json.get('first_name')
@@ -20,7 +20,7 @@ def register():
         phone = request.json.get('phone')
         result = register_user(first_name, last_name, email, password, phone)
         response=result
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        # response.headers.add("Access-Control-Allow-Origin", "*")
         return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     # response.headers.add("Access-Control-Allow-Origin", "*")
