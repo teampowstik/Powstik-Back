@@ -1,5 +1,5 @@
 from flask import jsonify
-from Files import db
+from Files import db, cors
 from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
 
 def check_consultation_seller_relation(consultation_id, seller_id):
@@ -53,6 +53,7 @@ def ConsultationByCategory(category_name):
         )
     return result
 
+@cors
 def AddConsultation(consultation, consultant, description, availability, 
                     image, cost, discount, related, bio_data, categories, seller_id):
     try:   

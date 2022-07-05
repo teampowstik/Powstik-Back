@@ -1,7 +1,9 @@
 from Files import db
 from flask import jsonify
+from Files import cors
 from ..models import Cart, CartSchema, Product, Consultation
 
+@cors
 def AddCart(user_id, item_id, type):
     if type=='product':
         item=Product.query.filter_by(product_id=item_id).first()
@@ -61,6 +63,7 @@ def GetCart(user_id):
     response={"result":response,"total_cart_price":total_cart_price}
     return response
 
+@cors
 def increase_quantity(user_id, pro_con_id, type):
     if type=='product':
         id='P'+str(pro_con_id)
@@ -88,6 +91,7 @@ def increase_quantity(user_id, pro_con_id, type):
         response.status_code=400
         return response
 
+@cors
 def decrease_quantity(user_id, pro_con_id, type):
     if type=='product':
         id='P'+str(pro_con_id)
@@ -112,6 +116,7 @@ def decrease_quantity(user_id, pro_con_id, type):
         response.status_code=400
         return response
 
+@cors
 def delete_item(user_id, pro_con_id, type):
     if type=='product':
         id='P'+str(pro_con_id)
