@@ -18,10 +18,9 @@ def register():
         phone = request.json.get('phone')
         shop_name = request.json.get('shop_name')
         shop_url = request.json.get('shop_url')
-        result = register_seller(first_name, last_name, email, password, phone, shop_name, shop_url)
-        response = result
+        response = register_seller(first_name, last_name, email, password, phone, shop_name, shop_url)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response, 200
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415
@@ -36,11 +35,11 @@ def login():
     if result is true:
         response=result
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
 
     response = result
     response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
+    return response, response.status_code
 
 @seller.patch('/change_password/<int:seller_id>')
 @jwt_required()
@@ -53,10 +52,9 @@ def patch_user_password(seller_id):
             return response, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
-        result = change_password(seller_id, old_password, new_password)
-        response = result
+        response = change_password(seller_id, old_password, new_password)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
     response=jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415
@@ -82,7 +80,9 @@ def patch_user_details(seller_id):
             response = jsonify({"message": "No user found with this ID"})
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response, 204
-        return res
+        response = res
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, response.status_code
     response=jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415

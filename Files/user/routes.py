@@ -17,9 +17,9 @@ def register():
         password = request.json.get('password')
         phone = request.json.get('phone')
         result = register_user(first_name, last_name, email, password, phone)
-        response=jsonify(result)
+        response=result
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response,200
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415
@@ -33,9 +33,9 @@ def login():
 
     if response is true:
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response,response.status_code
     response.headers.add("Access-Control-Allow-Origin", "*")
-    return response
+    return response, response.status_code
 
 @user.patch('/change_password/<int:user_id>')
 @jwt_required()
@@ -48,9 +48,9 @@ def patch_user_password(user_id):
             return response, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
-        response = jsonify(change_password(user_id, old_password, new_password))
+        response = change_password(user_id, old_password, new_password)
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415
@@ -74,9 +74,9 @@ def patch_user_details(user_id):
             response = jsonify({"message": "User not found"})
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response, 204
-        response = jsonify(res)
+        response = res
         response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response, 415

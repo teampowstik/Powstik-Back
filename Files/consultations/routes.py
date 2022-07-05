@@ -45,10 +45,9 @@ def NewConsultation():
         seller_id = get_jwt_identity()  
         res = request.get_json()
         if res['seller_id'] == seller_id:
-            result = AddConsultation(**res)
-            response = jsonify({"result": result})
+            response = AddConsultation(**res)
             response.headers.add("Access-Control-Allow-Origin", "*")
-            return response, 200
+            return response, response.status_code
         else:
             response = jsonify({"message": "You are not authorized to add this consultation"})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -64,10 +63,9 @@ def PatchConsultation(consultation_id):
         res = request.get_json()
         res['consultation_id'] = consultation_id
         if res['seller_id']==seller_id:  
-            result = UpdateConsultation(**res)
-            response = jsonify({"result": result})
+            response = UpdateConsultation(**res)
             response.headers.add("Access-Control-Allow-Origin", "*")
-            return response, 200
+            return response, response.status_code
         else:
             response = jsonify({"message": "You are not authorized to update this consultation"})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -83,9 +81,9 @@ def DeleteConsultation(consultation_id):
         seller_id = get_jwt_identity()
         result=RemoveConsultation(consultation_id,seller_id)
         if result:
-            response = jsonify({"result": result})
+            response = result
             response.headers.add("Access-Control-Allow-Origin", "*")
-            return response, 200
+            return response, response.status_code
         else:
             response = jsonify({"message": "You are not authorized to delete this consultation"})
             response.headers.add("Access-Control-Allow-Origin", "*")
