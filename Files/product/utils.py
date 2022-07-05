@@ -1,5 +1,5 @@
 from flask_restful import reqparse
-from flask import request, jsonify
+from flask import jsonify
 from Files import db
 from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
 
@@ -87,18 +87,18 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     product_id = "P" + str(product_id)
         
     #3. Adding Categories
-    
+    categories=categories.split(",")
     for CategoryName in categories:
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-            if not temp is None:
-                output = jsonify(
-                    BelongsToCategorySchema(many=False).dump(temp)
-                    )
-                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = product_id)
-                db.session.add(BelongsTo)
-            else:
-                return {"message": "Wrong Category Entered"}, 400
+        temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
+        if not temp is None:
+            output = jsonify(
+                BelongsToCategorySchema(many=False).dump(temp)
+                )
+            BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
+                                        pro_con_id = product_id)
+            db.session.add(BelongsTo)
+        else:
+            return {"message": "Wrong Category Entered"}, 400
 
     db.session.commit()
     

@@ -1,5 +1,4 @@
 from Files import db
-from flask import jsonify
 from ..models import BelongsToCategory, BelongsToCategorySchema
 
 def AllCategories():
@@ -9,6 +8,10 @@ def AllCategories():
 
 def AddCategory(category_name):
     try:
+        #check if category already exists
+        result = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).first()
+        if result:
+            return {'message': 'Category Already Exists'}
         result = BelongsToCategory(category_name = category_name, pro_con_id = None)
         db.session.add(result)
         db.session.commit()

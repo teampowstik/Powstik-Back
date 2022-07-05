@@ -1,5 +1,3 @@
-import json
-from urllib import response
 from flask import Blueprint, jsonify, request
 from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
 from flask_jwt_extended import jwt_required, get_jwt_identity

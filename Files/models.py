@@ -19,7 +19,7 @@ class Cart (db.Model):
     cart_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     customer_id=db.Column(db.Integer, db.ForeignKey("User.user_id"))
     price=db.Column(db.Numeric(10,2),nullable=False)
-    pro_con_id = db.Column(db.Integer, 
+    pro_con_id = db.Column(db.String(20), 
                            db.ForeignKey("Consultation.consultation_id"), 
                            db.ForeignKey("Product.product_id"))
     quantity=db.Column(db.Integer,nullable=False)
@@ -60,7 +60,7 @@ class Product (db.Model):
     __tablename__ = 'Product'
     product_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     name = db.Column(db.String(80), nullable=False)
-    qty_left = db.Column(db.String, nullable=False)
+    qty_left = db.Column(db.Integer, nullable=False)
     image = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     price = db.Column(db.Integer, nullable = False)
