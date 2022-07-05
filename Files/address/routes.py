@@ -2,11 +2,15 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import false, true
 from .utils import add_address_util, retrieve_all_addresses, retrieve_address_byUserID, remove_address, update_address_util
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_cors import cross_origin,CORS
+
 
 address = Blueprint('address', __name__, url_prefix='/address')
+cors = CORS(address, resources={r"/foo": {"origins": "*"}})
 
 @address.post('/add/<int:user_id>')
 @jwt_required()
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def add_address(user_id):
     if request.is_json:
         jwt_user_id = get_jwt_identity()
@@ -24,6 +28,7 @@ def add_address(user_id):
     return {"message": "Request must be JSON"}, 415
 
 @address.get('/')
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def get_addresses():
     result = retrieve_all_addresses()
     if result is None:
@@ -39,6 +44,7 @@ def retrieve_address_byID(user_id):
 
 @address.patch('/<int:user_id> <int:address_id>')
 @jwt_required()
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def update_address(user_id, address_id):
     if request.is_json:
         jwt_user_id = get_jwt_identity()
@@ -56,6 +62,7 @@ def update_address(user_id, address_id):
 
 @address.delete('/<int:user_id> <int:address_id>')
 @jwt_required()
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def delete_address(user_id, address_id):
     jwt_user_id = get_jwt_identity()
     if jwt_user_id != user_id:

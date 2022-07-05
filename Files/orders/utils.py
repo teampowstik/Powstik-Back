@@ -18,14 +18,12 @@ def isOrderItemThere(user_id, order_id, order_item_id):
         return False
     return db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first() is not None
 
-@cors
 def isNotJson():
     response=jsonify({"message":"Not a JSON"})
     response.status_code=415
     return response
 
 #Response Functions
-@cors
 def AllOrdersByUser(id):
     orders=db.session.query(Order).filter(Order.customer_id==id).all()
     orders=OrderSchema(many=True).dump(orders)
@@ -42,7 +40,6 @@ def AllOrdersByUser(id):
     response.status_code=200
     return response
 
-@cors
 def OrderByID(order_id,user_id):
     if not isOrderThere(order_id,user_id):
         response=jsonify({"message":"Order Not Found"})
@@ -61,7 +58,6 @@ def OrderByID(order_id,user_id):
     return response
 
 
-@cors
 def OrderItemByID(user_id, order_id, order_item_id):
     if not isOrderItemThere(user_id, order_id, order_item_id):
         response=jsonify({"message":"Order Item Not Found"})
@@ -73,7 +69,6 @@ def OrderItemByID(user_id, order_id, order_item_id):
     response.status_code=200
     return response
 
-@cors
 def AddOrder(user_id=None, address_id=None):
     if not isAddressThere(address_id):
             response = jsonify({'message': 'Address not found'})
@@ -107,7 +102,6 @@ def AddOrder(user_id=None, address_id=None):
     response.status_code=201
     return response
 
-@cors
 def UpdateOrder(user_id=None, order_id=None, address_id=None):
     if not isOrderThere(order_id, user_id):
         response = jsonify({'message': 'Order not found'})
@@ -133,7 +127,6 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
 
 
 # for sellers to change status of the order
-@cors
 def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, tracking_number):
     if not isOrderThere(order_id, user_id):
         response = jsonify({'message': 'Order not found'})
@@ -157,7 +150,6 @@ def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, track
         response.status_code=500
     return response
 
-@cors
 def RemoveOrder(user_id, order_id):
     if not isOrderThere(order_id, user_id):
         response = jsonify({'message': 'Order not found'})
@@ -181,7 +173,6 @@ def RemoveOrder(user_id, order_id):
     return response
 
 
-@cors
 def RemoveOrderItem(user_id, order_id, order_item_id):
     if not isOrderThere(order_id, user_id):
         response = jsonify({'message': 'Order not found'})
