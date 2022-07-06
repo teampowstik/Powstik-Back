@@ -6,60 +6,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 from sqlalchemy import or_
 
-
-def login_seller(email, password):
-    user=db.session.query(User).filter(User.email==email).first()
-    user_schema=UserSchema()
-    output = user_schema.dump(user)
-    if output:
-        if output["is_seller"] == True:
-            is_pass_correct = check_password_hash(output["password"], password)
-            if is_pass_correct:
-                refresh = create_refresh_token(identity=output["user_id"])
-                access = create_access_token(identity=output["user_id"])
-                response=jsonify({"message": "User Successfully logged in", "refresh": refresh, "access": access})
-                response.status_code = 200
-                return response
-            response = jsonify({"message": "Incorrect Password"})
-            response.status_code = 400
-            return response
-        else:
-            response = jsonify({"message": "User is not a seller"})
-            response.status_code = 400
-            return response
-    response = jsonify({"message": "User not found"})
-    response.status_code = 204
-    return response
-
-
-def register_seller(first_name, last_name, email, password, phone, shop_name, shop_url):
-    user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
-    user_schema=UserSchema()
-    output = user_schema.dump(user)
-
-    if output:
-        response = jsonify({"message": "User already exists"})
-        response.status_code = 400
-        return response
-    
-    password = request.json.get('password')
-    if (len(password)<=6 or len(password)>=20):
-        response = jsonify({"message": "Password must be between 6 and 20 characters"})
-        response.status_code = 400
-        return response
-    pwd_hash = generate_password_hash(password)
-
-    user=User(first_name=first_name,last_name=last_name, email=email,password = pwd_hash, phone = phone, is_seller = True)
-    db.session.add(user)
-    seller_user_id=db.session.query(User).filter(User.email==email).first().user_id
-    seller=Seller(shop_name=shop_name, shop_url=shop_url, seller_id=seller_user_id)
-    db.session.add(seller)
-    db.session.commit()
-    response=jsonify({"message": "User Successfully registered"})
-    response.status_code = 201
-    return response
-    
-
 def retrieve_all_sellers():
     sellers=db.session.query(Seller).all()
     seller_schema=SellerSchema(many=True)
