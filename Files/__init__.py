@@ -3,6 +3,7 @@ from Files.config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
 ma=Marshmallow()
 
@@ -11,7 +12,8 @@ db=SQLAlchemy()
 def createApp(configClass = Config):
     app = Flask(__name__)
     app.config.from_object(configClass)
-    
+    cors = CORS(app, resources={r"/foo": {"origins": "*"}})
+    app.config['CORS_HEADERS'] = 'Content-Type'
     db.init_app(app)
 
     JWTManager(app)

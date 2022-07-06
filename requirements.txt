@@ -9,6 +9,7 @@ Flask-JWT-Extended==4.4.1
 flask-marshmallow==0.14.0
 Flask-RESTful==0.3.9
 Flask-SQLAlchemy==2.5.1
+Flask_Cors==3.0.10
 greenlet==1.1.2
 idna==3.3
 itsdangerous==2.1.2
