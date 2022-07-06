@@ -42,6 +42,9 @@ def createApp(configClass = Config):
     from Files.wishlist.routes import wishlist_blueprint
     app.register_blueprint(wishlist_blueprint)
 
+    from Files.authenticaion.routes import authentication
+    app.register_blueprint(authentication)
+
     with app.app_context():
         db.create_all()
     
