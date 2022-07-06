@@ -22,7 +22,7 @@ def GetCartItems():
 @cart_blueprint.post('/<int:user_id>')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def AddToCart():
+def AddToCart(user_id):
     if request.is_json:
         res = request.get_json()
         res['user_id'] = user_id
