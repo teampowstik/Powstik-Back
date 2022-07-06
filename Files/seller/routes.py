@@ -1,47 +1,10 @@
-from email.policy import HTTP
-from urllib import response
 from flask import Blueprint, jsonify, request
-from sqlalchemy import false, true
-from .utils import change_password, login_seller, register_seller, retrieve_all_sellers, retrieve_seller_byID, remove_seller, update_seller,retrieve_products_by_seller, retrieve_consultations_by_seller
+from .utils import change_password, retrieve_all_sellers, retrieve_seller_byID, remove_seller, update_seller,retrieve_products_by_seller, retrieve_consultations_by_seller
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_cors import cross_origin,CORS
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 cors = CORS(seller, resources={r"/foo": {"origins": "*"}})
-
-
-@seller.post('/register')
-@cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def register():
-    if request.is_json:
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        email = request.json.get('email')
-        password = request.json.get('password')
-        phone = request.json.get('phone')
-        shop_name = request.json.get('shop_name')
-        shop_url = request.json.get('shop_url')
-        response = register_seller(first_name, last_name, email, password, phone, shop_name, shop_url)
-
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
-    
-@seller.post('/login')
-@cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def login():
-    email = request.json.get('email')
-    password = request.json.get('password')
-
-    result = login_seller(email, password)
-
-    if result is true:
-        response=result
-
-        return response, response.status_code
-
-    response = result
-    return response, response.status_code
 
 @seller.patch('/change_password/<int:seller_id>')
 @jwt_required()

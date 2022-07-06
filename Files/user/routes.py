@@ -2,41 +2,12 @@ from flask import Blueprint, jsonify, request
 import jwt
 import json
 from sqlalchemy import false, true
-from .utils import change_password, login_user, register_user, retrieve_all_users, retrieve_user_byID, remove_user, update_user
+from .utils import change_password, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_cors import cross_origin,CORS
 
 user = Blueprint('user', __name__, url_prefix='/user')
 cors = CORS(user, resources={r"/foo": {"origins": "*"}})
-
-@user.post('/register')
-@cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def register():
-    if request.is_json:
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        email = request.json.get('email')
-        password = request.json.get('password')
-        phone = request.json.get('phone')
-        result = register_user(first_name, last_name, email, password, phone)
-        response=result
-
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
-    
-@user.post('/login')
-@cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def login():
-    email = request.json.get('email')
-    password = request.json.get('password')
-
-    response = login_user(email, password)
-
-    if response is true:
-
-        return response,response.status_code
-    return response, response.status_code
 
 @user.patch('/change_password/<int:user_id>')
 @jwt_required()
