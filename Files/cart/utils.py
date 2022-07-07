@@ -3,8 +3,25 @@ from flask import jsonify
 from Files import cors
 from ..models import Cart, CartSchema, Product, Consultation
 
-@cors
+#implicitly used functions
+def is_Already_in_Cart(user_id, pro_con_id, type):
+    if type == "product":
+        pro_con_id="P"+str(pro_con_id)
+    elif type == "consultation":
+        pro_con_id="C"+str(pro_con_id)
+    cart = Cart.query.filter_by(customer_id=user_id, pro_con_id=pro_con_id, item_type='cart').first()
+    if cart:
+        return True
+    return False
+
+
+# route Functions
 def AddCart(user_id, item_id, type):
+    if is_Already_in_Cart(user_id, item_id, type):
+        response=jsonify({"message": "Item already in cart"})
+        response.status_code=409
+        return response
+    
     if type=='product':
         item=Product.query.filter_by(product_id=item_id).first()
         qty_left=int(item.qty_left)
@@ -118,6 +135,10 @@ def decrease_quantity(user_id, pro_con_id, type):
 
 @cors
 def delete_item(user_id, pro_con_id, type):
+    if not is_Already_in_Cart(user_id, pro_con_id, type):
+        response=jsonify({"message":"Item not in cart"})
+        response.status_code=400
+        return response
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
