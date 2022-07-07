@@ -91,7 +91,6 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     product_id = "P" + str(product_id)
         
     #3. Adding Categories
-    categories=categories.split(",")
     for CategoryName in categories:
         temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
         if not temp is None:

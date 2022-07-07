@@ -6,7 +6,7 @@ from flask_cors import cross_origin, CORS
 cart_blueprint = Blueprint('cart', __name__, url_prefix='/cart')
 cors = CORS(cart_blueprint, resources={r"/foo": {"origins": "*"}})
 
-@cart_blueprint.get('/<int:user_id>')
+@cart_blueprint.get('/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def GetCartItems():
@@ -19,10 +19,11 @@ def GetCartItems():
     return response, 200
     
 
-@cart_blueprint.post('/<int:user_id>')
+@cart_blueprint.post('/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def AddToCart(user_id):
+def AddToCart():
+    user_id=get_jwt_identity()
     if request.is_json:
         res = request.get_json()
         res['user_id'] = user_id
@@ -32,7 +33,7 @@ def AddToCart(user_id):
     response=jsonify({"message": "Please send a json request"})
     return response, 415
 
-@cart_blueprint.patch('/increaseqty/<int:user_id>')
+@cart_blueprint.patch('/increaseqty/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def IncreaseQuantity():
@@ -42,7 +43,7 @@ def IncreaseQuantity():
     response = increase_quantity(**res)
     return response, response.status_code
 
-@cart_blueprint.patch('/decreaseqty/<int:user_id>')
+@cart_blueprint.patch('/decreaseqty/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def DecreaseQuantity():
@@ -52,7 +53,7 @@ def DecreaseQuantity():
     response = decrease_quantity(**res)
     return response, response.status_code
 
-@cart_blueprint.delete('/<int:user_id>')
+@cart_blueprint.delete('/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def DeleteItem():

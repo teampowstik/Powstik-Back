@@ -44,6 +44,9 @@ def createApp(configClass = Config):
 
     from Files.authenticaion.routes import authentication
     app.register_blueprint(authentication)
+    
+    from Files.address.routes import address
+    app.register_blueprint(address)
 
     with app.app_context():
         db.create_all()

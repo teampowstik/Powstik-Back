@@ -16,7 +16,7 @@ def isAddressThere(address_id):
 def isOrderItemThere(user_id, order_id, order_item_id):
     if not isOrderThere(order_id, user_id):
         return False
-    return db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first() is not None
+    return db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).first() is not None
 
 def isNotJson():
     response=jsonify({"message":"Not a JSON"})
@@ -36,7 +36,7 @@ def AllOrdersByUser(id):
         order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order["order_id"]).all()
         order_items=Order_ItemsSchema(many=True).dump(order_items)
         order["order_items"]=order_items
-    response=jsonify(orders)
+    response=jsonify({"result":orders})
     response.status_code=200
     return response
 
@@ -63,7 +63,7 @@ def OrderItemByID(user_id, order_id, order_item_id):
         response=jsonify({"message":"Order Item Not Found"})
         response.status_code=404
         return response
-    order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first()
+    order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).first()
     order_item=Order_ItemsSchema().dump(order_item)
     response=jsonify(order_item)
     response.status_code=200
@@ -97,6 +97,7 @@ def AddOrder(user_id=None, address_id=None):
             status="Processing"
             )
         db.session.add(order_item)
+    items=db.session.query(Cart).filter(Cart.customer_id==user_id).delete()
     db.session.commit()
     response=jsonify({"message":"Order added"})
     response.status_code=201
@@ -134,7 +135,7 @@ def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, track
         response.status_code=404
         return response
     try:
-        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).filter(Order_Items.order_id==order_id).first()
         order_item.status=status
         # Processing
         # In Transit
@@ -183,7 +184,7 @@ def RemoveOrderItem(user_id, order_id, order_item_id):
         response.status_code=404
         return response
     try:
-        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).filter(Order_Items.order_id==order_id).first()
         db.session.delete(order_item)
         db.session.commit()
         response=jsonify({"message":"Order item removed"})

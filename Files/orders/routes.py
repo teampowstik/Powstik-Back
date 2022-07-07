@@ -7,6 +7,7 @@ orders_blueprint = Blueprint('orders', __name__, url_prefix='/orders')
 cors = CORS(orders_blueprint, resources={r"/foo": {"origins": "*"}})
 
 @orders_blueprint.get('/<int:user_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def GetOrders(user_id):
     if user_id != get_jwt_identity():
@@ -17,6 +18,7 @@ def GetOrders(user_id):
     return orders
 
 @orders_blueprint.get('/<int:user_id>/<int:order_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def GetOrderByID(user_id, order_id):
     if user_id != get_jwt_identity():
@@ -27,6 +29,7 @@ def GetOrderByID(user_id, order_id):
     return order
 
 @orders_blueprint.get('/<int:user_id>/<int:order_id>/<int:item_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def GetOrderItemByID(user_id, order_id, item_id):
     if user_id != get_jwt_identity():
@@ -37,6 +40,7 @@ def GetOrderItemByID(user_id, order_id, item_id):
     return order_item
 
 @orders_blueprint.post('/<int:user_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def PostOrder(user_id):
     if user_id != get_jwt_identity():
@@ -52,6 +56,7 @@ def PostOrder(user_id):
     return isNotJson()
 
 @orders_blueprint.patch('/<int:user_id>/<int:order_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def PatchOrder(user_id, order_id):
     if user_id != get_jwt_identity():
@@ -65,6 +70,7 @@ def PatchOrder(user_id, order_id):
     return isNotJson()
 
 @orders_blueprint.patch('/<int:user_id>/<int:order_id>/<int:order_item_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def PatchOrderItem(user_id, order_id, order_item_id):
     if user_id != get_jwt_identity():
@@ -81,6 +87,7 @@ def PatchOrderItem(user_id, order_id, order_item_id):
     return isNotJson()
     
 @orders_blueprint.delete('/<int:user_id>/<int:order_id>/<int:order_item_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def DeleteOrderItem(user_id, order_id, order_item_id):
     if user_id != get_jwt_identity():
@@ -90,6 +97,7 @@ def DeleteOrderItem(user_id, order_id, order_item_id):
     return RemoveOrderItem(user_id, order_id, order_item_id)
     
 @orders_blueprint.delete('/<int:user_id>/<int:order_id>')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def DeleteOrder(user_id, order_id):
     if user_id != get_jwt_identity():
