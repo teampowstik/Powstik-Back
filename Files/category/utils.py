@@ -26,8 +26,7 @@ def AddCategory(category_name):
 
 
 def UpdateCategoryName(name, new_name):
-    result = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==
-                                                            name).first()
+    result = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==name).first()
     if result:
         result.category_name = new_name
         db.session.commit()
