@@ -13,6 +13,7 @@ def createApp(configClass = Config):
     app = Flask(__name__)
     app.config.from_object(configClass)
     cors = CORS(app, resources={r"/foo": {"origins": "*"}})
+    cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
     app.config['CORS_HEADERS'] = 'Content-Type'
     db.init_app(app)
 
