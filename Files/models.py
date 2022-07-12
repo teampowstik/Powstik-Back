@@ -87,7 +87,7 @@ class Order (db.Model):
     __tablename__ = "Order"
     order_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     address_id = db.Column(db.Integer, db.ForeignKey("Address.address_id"))
-    amount = db.Column(db.Integer,nullable=False)
+    amount = db.Column(db.Numeric(10,2),nullable=False)
     date = db.Column(db.DateTime(timezone=True), server_default = func.now())
     customer_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
     
@@ -99,7 +99,7 @@ class Order_Items(db.Model):
     quantity = db.Column(db.Integer,nullable=False)
     price = db.Column(db.Numeric(10,2),nullable=False)
     status = db.Column(db.String(20), nullable=True)
-    tracking_id = db.Column(db.String, nullable=False)
+    tracking_id = db.Column(db.String, nullable=True)
     tracking_link = db.Column(db.String, nullable=True)
     
 class BelongsToCategory (db.Model):

@@ -79,7 +79,7 @@ def AddConsultation(consultation, consultant, description, availability,
         output = ConsultationSchema(many=False).dump(temp)
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
-        
+        categories = categories.split(",")
         for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
@@ -134,6 +134,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
+        categories = categories.split(",")
         for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
