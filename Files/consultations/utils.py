@@ -1,5 +1,5 @@
 from flask import jsonify
-from Files import db, cors
+from Files import db
 from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
 
 def check_consultation_seller_relation(consultation_id, seller_id):
@@ -53,7 +53,6 @@ def ConsultationByCategory(category_name):
         )
     return result
 
-@cors
 def AddConsultation(consultation, consultant, description, availability, 
                     image, cost, discount, related, bio_data, categories, seller_id):
     try:   
@@ -80,7 +79,7 @@ def AddConsultation(consultation, consultant, description, availability,
         output = ConsultationSchema(many=False).dump(temp)
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
-        
+        categories = categories.split(",")
         for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:
@@ -135,6 +134,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
+        categories = categories.split(",")
         for CategoryName in categories:
             temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
             if not temp is None:

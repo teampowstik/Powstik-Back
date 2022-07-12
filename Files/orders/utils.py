@@ -1,7 +1,7 @@
 from cgitb import reset
 from urllib import response
 from sqlalchemy import desc
-from Files import db, cors
+from Files import db
 from flask import jsonify
 from ..models import Order, OrderSchema, Order_Items, Order_ItemsSchema
 from ..models import Cart, CartSchema, User, Address
@@ -131,7 +131,7 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
 def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, tracking_number):
     if not isOrderThere(order_id, user_id):
         response = jsonify({'message': 'Order not found'})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        
         response.status_code=404
         return response
     try:
