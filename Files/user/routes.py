@@ -9,40 +9,32 @@ from flask_cors import cross_origin,CORS
 user = Blueprint('user', __name__, url_prefix='/user')
 cors = CORS(user, resources={r"/foo": {"origins": "*"}})
 
-@user.patch('/change_password/<int:user_id>')
+@user.patch('/change_password/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def patch_user_password(user_id):
+def patch_user_password():
     if request.is_json:
         jwt_user_id = get_jwt_identity()
-        if jwt_user_id != user_id:
-            response = jsonify({"message": "You are not authorized to change this user's password"})
-    
-            return response, 401
         old_password = request.json.get('old_password')
         new_password = request.json.get('new_password')
-        response = change_password(user_id, old_password, new_password)
+        response = change_password(jwt_user_id, old_password, new_password)
 
         return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 
-@user.patch('/user_details/<int:user_id>')
+@user.patch('/user_details/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def patch_user_details(user_id):
+def patch_user_details():
     if request.is_json:
         jwt_user_id = get_jwt_identity()
-        if jwt_user_id != user_id:
-            response = jsonify({"message": "You are not authorized to change this user's details"})
-    
-            return response, 401
         first_name = request.json.get('first_name')
         last_name = request.json.get('last_name')
         email = request.json.get('email')
         password = request.json.get('password')
         phone = request.json.get('phone')
-        res = update_user(user_id, first_name, last_name, email, password, phone)
+        res = update_user(jwt_user_id, first_name, last_name, email, password, phone)
         if res is None:
             response = jsonify({"message": "User not found"})
     
@@ -64,9 +56,11 @@ def get_users():
     response = jsonify(result)
     return response
 
-@user.get('/<int:user_id>')
+@user.get('/')
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def get_user_byID(user_id):
+def get_user_byID():
+    user_id=get_jwt_identity()
     result = retrieve_user_byID(user_id)
     if result is None:
         response = jsonify({"message": "User not found"})
@@ -75,9 +69,11 @@ def get_user_byID(user_id):
     response = jsonify(result)
     return response, 200
 
-@user.delete("/<int:user_id>")
+@user.delete("/")
+@jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def delete_user(user_id):
+def delete_user():
+    user_id=get_jwt_identity()
     result = remove_user(user_id)
     if result is None:
         response = jsonify({"message": "User not found"})
