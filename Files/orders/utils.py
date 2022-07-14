@@ -18,6 +18,11 @@ def isOrderItemThere(user_id, order_id, order_item_id):
         return False
     return db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).first() is not None
 
+def isAddressofUsers(user_id, address_id):
+    if db.session.query(Address).filter(Address.address_id==address_id).filter(Address.user_id==user_id).first() is None:   
+        return False
+    return True
+
 def isNotJson():
     response=jsonify({"message":"Not a JSON"})
     response.status_code=415
@@ -114,6 +119,11 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
         return response
     if not user_id or not order_id or not address_id:
         response=jsonify({"message":"Missing user_id, order_id or address_id"})
+        response.status_code=404
+    if not isAddressofUsers(user_id, address_id):
+        response=jsonify({"message":"Address not found"})
+        response.status_code=404
+        return response
     try:
         order=db.session.query(Order).filter(Order.order_id==order_id).first()
         order.address_id=address_id
@@ -130,8 +140,7 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
 # for sellers to change status of the order
 def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, tracking_number):
     if not isOrderThere(order_id, user_id):
-        response = jsonify({'message': 'Order not found'})
-        
+        response = jsonify({'message': 'Order not found'})   
         response.status_code=404
         return response
     try:
