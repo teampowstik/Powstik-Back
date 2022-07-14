@@ -56,7 +56,7 @@ def get_users():
     response = jsonify(result)
     return response
 
-@user.get('/')
+@user.get('/getuser')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def get_user_byID():

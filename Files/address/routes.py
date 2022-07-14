@@ -11,7 +11,7 @@ cors = CORS(address, resources={r"/foo": {"origins": "*"}})
 @address.post('/add/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def add_address(user_id):
+def add_address():
     if request.is_json:
         jwt_user_id = get_jwt_identity()
         # if jwt_user_id != user_id:
@@ -35,7 +35,7 @@ def get_addresses():
         return {"message": "No addresses found"}, 404
     return jsonify(result)
 
-@address.get('/')
+@address.get('/user')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def retrieve_address_byID():

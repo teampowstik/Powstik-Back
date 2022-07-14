@@ -54,7 +54,7 @@ def get_users():
     response = result
     return response
 
-@seller.get('/')
+@seller.get('/getseller')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def get_user_byID():

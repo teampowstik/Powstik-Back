@@ -45,7 +45,7 @@ def PostOrder():
 @orders_blueprint.patch('/<int:order_id>')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def PatchOrder(user_id, order_id):
+def PatchOrder(order_id):
     user_id = get_jwt_identity()
     if request.is_json:
         result=request.get_json()
