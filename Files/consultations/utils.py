@@ -1,6 +1,6 @@
 from flask import jsonify
 from Files import db
-from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
+from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema, Category, CategorySchema, Product, ProductSchema
 
 def check_consultation_seller_relation(consultation_id, seller_id):
     result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).filter(Consultation.seller_id==seller_id).first()
@@ -34,8 +34,14 @@ def ConsultationByID(consultation_id):
     return result
 
 def ConsultationByCategory(category_name):
+    category_name=category_name.lower()
+    category=db.session.query(Category).filter(Category.category_name==category_name).first()
+    if not category:
+        response=jsonify({"message": "Category does not exist"})
+        response.status_code=400
+        return response
     records = db.session.query(BelongsToCategory).filter(
-        BelongsToCategory.category_name==category_name).filter(
+        BelongsToCategory.category_id==category.category_id).filter(
             BelongsToCategory.pro_con_id!=None).filter(
                 BelongsToCategory.pro_con_id.startswith('C')).all()
     result = []
@@ -46,12 +52,14 @@ def ConsultationByCategory(category_name):
         output= output.get_json()
         output = output["pro_con_id"]
         output = int(output[1:])
-        temp = db.session.query(Consultation).filter(Consultation.consultation_id==output).first()
-        consultation = ConsultationSchema(many=False).dump(temp)
+        temp = db.session.query(Product).filter(Product.product_id==output).first()
+        consultation = ProductSchema(many=False).dump(temp)
         result.append(
             jsonify(consultation).get_json()
         )
-    return result
+    response=jsonify({"result":result})
+    response.status_code=200
+    return response
 
 def AddConsultation(consultation, consultant, description, availability, 
                     image, cost, discount, related, bio_data, categories, seller_id):
@@ -79,18 +87,16 @@ def AddConsultation(consultation, consultant, description, availability,
         output = ConsultationSchema(many=False).dump(temp)
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
+        categories = categories.replace(" ","")
         categories = categories.split(",")
         for CategoryName in categories:
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-            if not temp is None:
-                output = jsonify(
-                    BelongsToCategorySchema(many=False).dump(temp)
-                    )
-                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = consultation_id)
-                db.session.add(BelongsTo)
+            CategoryName=CategoryName.lower()
+            category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+            if category:
+                record=BelongsToCategory(pro_con_id=consultation_id,category_id=category.category_id)
+                db.session.add(record)
             else:
-                response=jsonify({"message":"Category Does Not Exist"})
+                response=jsonify({"message": "Category does not exist"})
                 response.status_code=400
                 return response
         db.session.commit()
@@ -134,18 +140,16 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
-        categories = categories.split(",")
+        categories = categories.replace(" ","")
+        categories=categories.split(",")
         for CategoryName in categories:
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-            if not temp is None:
-                output = jsonify(
-                    BelongsToCategorySchema(many=False).dump(temp)
-                    )
-                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = consultation_id)
-                db.session.add(BelongsTo)
+            CategoryName=CategoryName.lower()
+            category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+            if category:
+                record=BelongsToCategory(pro_con_id=consultation_id,category_id=category.category_id)
+                db.session.add(record)
             else:
-                response=jsonify({"message":"Category Does Not Exist"})
+                response=jsonify({"message": "Category does not exist"})
                 response.status_code=400
                 return response
         db.session.commit()
