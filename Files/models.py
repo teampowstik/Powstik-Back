@@ -102,11 +102,17 @@ class Order_Items(db.Model):
     tracking_id = db.Column(db.String, nullable=True)
     tracking_link = db.Column(db.String, nullable=True)
     
+class Category (db.Model):
+    __tablename__ = 'Category'
+    category_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    category_name = db.Column(db.String(80), nullable=False, unique=True)
+    description = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
 class BelongsToCategory (db.Model):
     __tablename__ = "BelongsToCategory"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    category_name = db.Column(db.String, nullable=False)
-    pro_con_id = db.Column(db.String, nullable=True)  
+    category_id = db.Column(db.Integer, db.ForeignKey("Category.category_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
 
 class Trending (db.Model): 
     __tablename__ = "Trending"
@@ -161,7 +167,7 @@ class Order_ItemsSchema(ma.Schema):
 class BelongsToCategorySchema(ma.Schema):
     class Meta:
         model = BelongsToCategory
-        fields = ('table_sno', 'category_name', 'pro_con_id')
+        fields = ('table_sno', 'category_id', 'pro_con_id')
 
 class ProductSchema(ma.Schema):
     class Meta:
@@ -193,3 +199,8 @@ class SellerSchema(ma.Schema):
     class Meta:
         model = Seller
         fields = ('seller_id', 'shop_name', 'shop_url')
+
+class CategorySchema(ma.Schema):
+    class Meta:
+        model = Category
+        fields = ('category_id', 'category_name', 'description', 'image')

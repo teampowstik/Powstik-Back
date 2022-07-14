@@ -21,7 +21,9 @@ def GetAllCategories():
 def PostAddCategory():
     if request.is_json:
         category_name=request.json["category_name"]
-        response = AddCategory(category_name)
+        description=request.json["description"]
+        image=request.json["image"]
+        response = AddCategory(category_name.lower(),description,image)
 
         return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
@@ -31,8 +33,10 @@ def PostAddCategory():
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def PatchName(name):
     if request.is_json:
-        new_name = request.json['category_name']
-        res = UpdateCategoryName(name, new_name)
+        new_name = request.json['new_name']
+        description = request.json['description']
+        image = request.json['image']
+        res = UpdateCategoryName(name.lower(), new_name.lower(), description, image)
         response = res
 
         return response, response.status_code
@@ -44,7 +48,7 @@ def PatchName(name):
 def DeleteName():
     if request.is_json:
         CategoryName = request.json['category_name']
-        result = RemoveCategoryRecord(CategoryName)
+        result = RemoveCategoryRecord(CategoryName.lower())
         if result:
             response = jsonify({"message": "Category deleted"})
     

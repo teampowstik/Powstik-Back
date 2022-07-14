@@ -33,8 +33,7 @@ def get_product_by_category_name(category_name):
     if result is None:
         response={}
         return response, 204
-    response =  jsonify({"result": result})
-    return response, 200
+    return result
 
 @product.post('/')
 @jwt_required()
