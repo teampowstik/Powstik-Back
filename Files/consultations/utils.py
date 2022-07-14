@@ -52,8 +52,8 @@ def ConsultationByCategory(category_name):
         output= output.get_json()
         output = output["pro_con_id"]
         output = int(output[1:])
-        temp = db.session.query(Product).filter(Product.product_id==output).first()
-        consultation = ProductSchema(many=False).dump(temp)
+        temp = db.session.query(Consultation).filter(Consultation.consultation_id==output).first()
+        consultation = ConsultationSchema(many=False).dump(temp)
         result.append(
             jsonify(consultation).get_json()
         )
