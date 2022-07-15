@@ -18,9 +18,19 @@ def check_is_seller(seller_id):
 
 def AllConsultations():
     result = Consultation.query.all()
-    consultation_schema = ConsultationSchema(many=True)
-    output = consultation_schema.dump(result)
-    return {"result":output}
+    response=[]
+    for record in result:
+        output=jsonify(ConsultationSchema(many=False).dump(record))
+        output=output.get_json()
+        categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(output["consultation_id"]))
+        output["categories"] = []
+        for category in categories:
+            res=db.session.query(Category).filter(Category.category_id==category.category_id).first()
+            output["categories"].append(res.category_name)
+        response.append(output)
+    response=jsonify({"result":response})
+    response.status_code=200
+    return response
 
 def ConsultationByID(consultation_id):
     result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
@@ -30,7 +40,8 @@ def ConsultationByID(consultation_id):
     result = ConsultationSchema(many=False).dump(result)
     result["categories"] = []
     for category in categories:
-        result["categories"].append(category.category_name)
+        res=db.session.query(Category).filter(Category.category_id==category.category_id).first()
+        result["categories"].append(res.category_name)
     return result
 
 def ConsultationByCategory(category_name):
@@ -62,7 +73,7 @@ def ConsultationByCategory(category_name):
     return response
 
 def AddConsultation(consultation, consultant, description, availability, 
-                    image, cost, discount, related, bio_data, categories, seller_id):
+                    image, cost, discount, vendor_info, bio_data, categories, seller_id):
     try:   
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
@@ -79,7 +90,7 @@ def AddConsultation(consultation, consultant, description, availability,
                                     description = description, availability=availability, 
                                     image=image, cost=cost, discount=discount, 
                                     effective_price=float(cost)-(float(discount)*float(cost)/100),
-                                    related=related, bio_data=bio_data, seller_id=seller_id)
+                                    vendor_info=vendor_info, bio_data=bio_data, seller_id=seller_id)
         db.session.add(result)
         #getting Consultation ID
         temp = db.session.query(Consultation).filter(Consultation.consultation==
@@ -109,7 +120,7 @@ def AddConsultation(consultation, consultant, description, availability,
     return response
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
-                        availability, image, cost, discount, related, bio_data, categories, seller_id):
+                        availability, image, cost, discount, vendor_info, bio_data, categories, seller_id):
     try:
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
@@ -129,7 +140,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         result.image = image
         result.cost =cost
         result.discount = discount
-        result.related =related
+        result.vendor_info =vendor_info
         result.bio_data =bio_data
         db.session.commit()
         

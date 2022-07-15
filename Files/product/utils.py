@@ -1,18 +1,6 @@
-from flask_restful import reqparse
 from flask import jsonify
 from Files import db
 from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema, Category
-
-
-add_product_args = reqparse.RequestParser()
-add_product_args.add_argument('name', type=str, required=True, help='Product name cannot be blank!')
-add_product_args.add_argument('description', type=str, required=True, help='Product description cannot be blank!')
-add_product_args.add_argument('price', type=float, required=True, help='Product price cannot be blank!')
-add_product_args.add_argument('image', type=str, required=True, help='Product image cannot be blank!')
-add_product_args.add_argument('discount', type=float, required=True, help='Product discount cannot be blank!')
-add_product_args.add_argument('qty_left', type=int, required=True, help='Product qty cannot be blank!')
-add_product_args.add_argument('category', type=int, required=True, help='Product category cannot be blank!')
-add_product_args.add_argument('related_products', type=str, required=True, help='Product related products cannot be blank!')
 
 def check_product_seller_relation(product_id, seller_id):
     result=db.session.query(Product).filter(Product.product_id==product_id).filter(Product.seller_id==seller_id).first()
@@ -30,9 +18,21 @@ def check_is_seller(seller_id):
 
 def get_all_products():
     result=Product.query.all()
-    product_schema=ProductSchema(many=True)
-    output = product_schema.dump(result)
-    return {"result":output}
+    response=[]
+    for product in result:
+        output=jsonify(ProductSchema(many=False).dump(product))
+        output=output.get_json()
+        categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="P"+str(output["product_id"]))
+        output["categories"] = []
+        for category in categories:
+            id=category.category_id
+            res=db.session.query(Category).filter(Category.category_id==id).first()
+            output["categories"].append(res.category_name)
+        response.append(output)
+
+    response=jsonify({"result":response})
+    response.status_code=200
+    return response
 
 def products_by_category(category_name):
     category_name=category_name.lower()
@@ -51,9 +51,9 @@ def products_by_category(category_name):
         output = output["pro_con_id"]
         output = int(output[1:])
         temp = db.session.query(Product).filter(Product.product_id==output).first()
-        consultation = ProductSchema(many=False).dump(temp)
+        product = ProductSchema(many=False).dump(temp)
         result.append(
-            jsonify(consultation).get_json()
+            jsonify(product).get_json()
         )
     response=jsonify({"result":result})
     response.status_code=200
@@ -72,7 +72,7 @@ def get_product_by_id(id):
         result["categories"].append(res.category_name)
     return result
 
-def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+def add_product(name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})
@@ -87,7 +87,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     #1. Adding Product
     record=Product(name=name,description=description,price=price,image=image,
                     discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
-                    qty_left=qty_left,related_products=related_products,seller_id=seller_id)
+                    qty_left=qty_left,vendor_info=vendor_info,seller_id=seller_id)
     db.session.add(record)
     
     #2. Getting Prod ID
@@ -116,7 +116,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     response.status_code=201
     return response
 
-def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+def update_product(product_id, name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})
@@ -142,7 +142,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
     product.discount=discount
     product.effective_price=float(price)-(float(discount)*float(price)/100)
     product.qty_left=qty_left
-    product.related_products=related_products
+    product.vendor_info=vendor_info
     db.session.commit()
     
     #2. Delete Current Product Category Mapping
