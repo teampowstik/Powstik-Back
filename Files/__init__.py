@@ -51,6 +51,9 @@ def createApp(configClass = Config):
     from Files.reviews.routes import reviews
     app.register_blueprint(reviews)
 
+    from Files.coupons.routes import coupons
+    app.register_blueprint(coupons)
+
     with app.app_context():
         db.create_all()
     

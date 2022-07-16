@@ -20,7 +20,7 @@ def AddCategory(category_name):
         response.status_code = 201
         return response
     except:
-        response=jsonify({"message":"Category Not Added"})
+        response=jsonify({"message":"Caty Not Added"})
         response.status_code = 400
         return response
 

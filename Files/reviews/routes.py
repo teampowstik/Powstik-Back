@@ -6,7 +6,7 @@ from flask_cors import cross_origin, CORS
 reviews = Blueprint('reviews', __name__, url_prefix='/reviews')
 cors = CORS(reviews, resources={r"/foo": {"origins": "*"}})
 
-@reviews.get('/<int:pro_con_id>')
+@reviews.get('/<string:pro_con_id>')
 # @jwt_required()
 def get_reviews_by_productID(pro_con_id):
     result = retrieve_reviews_by_productID(pro_con_id)
@@ -25,14 +25,15 @@ def get_reviews_by_userID(user_id):
     response = jsonify(result)
     return response
 
-@reviews.post('/<int:pro_con_id>')
+@reviews.post('/<string:pro_con_id>')
+@jwt_required()
 def post_reviews(pro_con_id):
     if request.is_json:
-        user_id = request.json.get('user_id')
+        user_id = get_jwt_identity()
         rating = request.json.get('rating')
         review = request.json.get('review')
         type = request.json.get('type')
         response = add_reviews(pro_con_id, user_id, rating, review, type)
-        return response, response.status_code
+        return response
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
