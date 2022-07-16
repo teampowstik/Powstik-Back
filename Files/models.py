@@ -10,6 +10,14 @@ class User (db.Model):
     password=db.Column(db.String(60),nullable=False)
     phone=db.Column(db.String(10),unique=True,nullable=False)
     is_seller=db.Column(db.Boolean,nullable=True, default = False) #customer (False) or seller (True)
+    gender=db.Column(db.String(20), nullable=True)
+    country=db.Column(db.String(20),nullable=True)
+    state=db.Column(db.String(20),nullable=True)
+    city=db.Column(db.String(20),nullable=True)
+    address=db.Column(db.String(80),nullable=True)
+    pincode=db.Column(db.String(20),nullable=True)
+    plot_no=db.Column(db.String(20),nullable=True)
+    profile_img=db.Column(db.String(20),nullable=True)
 
     def __repr__(self):
         return f"User('{self.user_id}','{self.first_name}','{self.is_seller}')"
@@ -142,7 +150,7 @@ class Reviews (db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         model = User
-        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'is_seller')
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'phone', 'is_seller', 'address', 'plot_no', 'city', 'state', 'country', 'pincode', 'gender', 'profle_img')
 
 class CartSchema(ma.Schema):
     class Meta:

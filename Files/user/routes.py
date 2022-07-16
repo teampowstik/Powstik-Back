@@ -29,15 +29,11 @@ def patch_user_password():
 def patch_user_details():
     if request.is_json:
         jwt_user_id = get_jwt_identity()
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        email = request.json.get('email')
-        password = request.json.get('password')
-        phone = request.json.get('phone')
-        res = update_user(jwt_user_id, first_name, last_name, email, password, phone)
+        data=request.get_json()
+        data["user_id"]=jwt_user_id
+        res = update_user(**data)
         if res is None:
             response = jsonify({"message": "User not found"})
-    
             return response, 204
         response = res
 
