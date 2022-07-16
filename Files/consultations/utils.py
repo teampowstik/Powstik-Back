@@ -1,6 +1,6 @@
 from flask import jsonify
 from Files import db
-from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema
+from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema, Category, CategorySchema, Product, ProductSchema
 
 def check_consultation_seller_relation(consultation_id, seller_id):
     result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).filter(Consultation.seller_id==seller_id).first()
@@ -18,9 +18,19 @@ def check_is_seller(seller_id):
 
 def AllConsultations():
     result = Consultation.query.all()
-    consultation_schema = ConsultationSchema(many=True)
-    output = consultation_schema.dump(result)
-    return {"result":output}
+    response=[]
+    for record in result:
+        output=jsonify(ConsultationSchema(many=False).dump(record))
+        output=output.get_json()
+        categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="C"+str(output["consultation_id"]))
+        output["categories"] = []
+        for category in categories:
+            res=db.session.query(Category).filter(Category.category_id==category.category_id).first()
+            output["categories"].append(res.category_name)
+        response.append(output)
+    response=jsonify({"result":response})
+    response.status_code=200
+    return response
 
 def ConsultationByID(consultation_id):
     result = db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).first()
@@ -30,12 +40,19 @@ def ConsultationByID(consultation_id):
     result = ConsultationSchema(many=False).dump(result)
     result["categories"] = []
     for category in categories:
-        result["categories"].append(category.category_name)
+        res=db.session.query(Category).filter(Category.category_id==category.category_id).first()
+        result["categories"].append(res.category_name)
     return result
 
 def ConsultationByCategory(category_name):
+    category_name=category_name.lower()
+    category=db.session.query(Category).filter(Category.category_name==category_name).first()
+    if not category:
+        response=jsonify({"message": "Category does not exist"})
+        response.status_code=400
+        return response
     records = db.session.query(BelongsToCategory).filter(
-        BelongsToCategory.category_name==category_name).filter(
+        BelongsToCategory.category_id==category.category_id).filter(
             BelongsToCategory.pro_con_id!=None).filter(
                 BelongsToCategory.pro_con_id.startswith('C')).all()
     result = []
@@ -51,10 +68,12 @@ def ConsultationByCategory(category_name):
         result.append(
             jsonify(consultation).get_json()
         )
-    return result
+    response=jsonify({"result":result})
+    response.status_code=200
+    return response
 
 def AddConsultation(consultation, consultant, description, availability, 
-                    image, cost, discount, related, bio_data, categories, seller_id):
+                    image, cost, discount, vendor_info, bio_data, categories, seller_id):
     try:   
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
@@ -71,7 +90,7 @@ def AddConsultation(consultation, consultant, description, availability,
                                     description = description, availability=availability, 
                                     image=image, cost=cost, discount=discount, 
                                     effective_price=float(cost)-(float(discount)*float(cost)/100),
-                                    related=related, bio_data=bio_data, seller_id=seller_id)
+                                    vendor_info=vendor_info, bio_data=bio_data, seller_id=seller_id)
         db.session.add(result)
         #getting Consultation ID
         temp = db.session.query(Consultation).filter(Consultation.consultation==
@@ -79,18 +98,16 @@ def AddConsultation(consultation, consultant, description, availability,
         output = ConsultationSchema(many=False).dump(temp)
         consultation_id = jsonify(output).json["consultation_id"]
         consultation_id = "C" + str(consultation_id)
-        
+        categories = categories.replace(" ","")
+        categories = categories.split(",")
         for CategoryName in categories:
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-            if not temp is None:
-                output = jsonify(
-                    BelongsToCategorySchema(many=False).dump(temp)
-                    )
-                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = consultation_id)
-                db.session.add(BelongsTo)
+            CategoryName=CategoryName.lower()
+            category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+            if category:
+                record=BelongsToCategory(pro_con_id=consultation_id,category_id=category.category_id)
+                db.session.add(record)
             else:
-                response=jsonify({"message":"Category Does Not Exist"})
+                response=jsonify({"message": "Category does not exist"})
                 response.status_code=400
                 return response
         db.session.commit()
@@ -103,7 +120,7 @@ def AddConsultation(consultation, consultant, description, availability,
     return response
 
 def UpdateConsultation(consultation_id, consultation, consultant, description, 
-                        availability, image, cost, discount, related, bio_data, categories, seller_id):
+                        availability, image, cost, discount, vendor_info, bio_data, categories, seller_id):
     try:
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
@@ -123,7 +140,7 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         result.image = image
         result.cost =cost
         result.discount = discount
-        result.related =related
+        result.vendor_info =vendor_info
         result.bio_data =bio_data
         db.session.commit()
         
@@ -134,17 +151,16 @@ def UpdateConsultation(consultation_id, consultation, consultant, description,
         
         #3. Adding new categories for the respective Consultation
         consultation_id = "C" + str(consultation_id)
+        categories = categories.replace(" ","")
+        categories=categories.split(",")
         for CategoryName in categories:
-            temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-            if not temp is None:
-                output = jsonify(
-                    BelongsToCategorySchema(many=False).dump(temp)
-                    )
-                BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                            pro_con_id = consultation_id)
-                db.session.add(BelongsTo)
+            CategoryName=CategoryName.lower()
+            category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+            if category:
+                record=BelongsToCategory(pro_con_id=consultation_id,category_id=category.category_id)
+                db.session.add(record)
             else:
-                response=jsonify({"message":"Category Does Not Exist"})
+                response=jsonify({"message": "Category does not exist"})
                 response.status_code=400
                 return response
         db.session.commit()

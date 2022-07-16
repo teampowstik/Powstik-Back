@@ -23,8 +23,8 @@ def GetCartItems():
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def AddToCart():
+    user_id=get_jwt_identity()
     if request.is_json:
-        user_id = get_jwt_identity()
         res = request.get_json()
         res['user_id'] = user_id
         response = AddCart(**res)

@@ -15,8 +15,7 @@ def GetConsultations():
         response = jsonify({'message': 'No consultations found'})
 
         return response, 204
-    response = jsonify(result)
-    return response, 200
+    return result
 
 @consultation_blueprint.get('/<int:consultation_id>')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
@@ -24,7 +23,6 @@ def GetConsultationsbyID(consultation_id):
     result = ConsultationByID(consultation_id)
     if result is None:
         response={}
-
         return response, 204
     response = jsonify(result)
     return response, 200
@@ -35,10 +33,8 @@ def GetConsultbyCategory(category):
     result = ConsultationByCategory(category)
     if result is None:
         response={}
-
         return response, 204
-    response = jsonify({"result": result})
-    return response, 200
+    return result
 
 @consultation_blueprint.post('/')
 @jwt_required()
@@ -47,14 +43,9 @@ def NewConsultation():
     if request.is_json:
         seller_id = get_jwt_identity()  
         res = request.get_json()
-        if res['seller_id'] == seller_id:
-            response = AddConsultation(**res)
-    
-            return response, response.status_code
-        else:
-            response = jsonify({"message": "You are not authorized to add this consultation"})
-    
-            return response, 401
+        res['seller_id'] = seller_id
+        response = AddConsultation(**res)
+        return response, response.status_code
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 
@@ -66,14 +57,10 @@ def PatchConsultation(consultation_id):
         seller_id = get_jwt_identity()  
         res = request.get_json()
         res['consultation_id'] = consultation_id
-        if res['seller_id']==seller_id:  
-            response = UpdateConsultation(**res)
-    
-            return response, response.status_code
-        else:
-            response = jsonify({"message": "You are not authorized to update this consultation"})
-    
-            return response, 401
+        res['seller_id']=seller_id
+        response = UpdateConsultation(**res)
+        return response, response.status_code
+
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
         
@@ -87,11 +74,11 @@ def DeleteConsultation(consultation_id):
         result=RemoveConsultation(consultation_id,seller_id)
         if result:
             response = result
-    
-            return response, response.status_code
+            return response
         else:
             response = jsonify({"message": "You are not authorized to delete this consultation"})
-    
-            return response, 401
+            response.status_code = 401
+            return response
     response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+    response.status_code = 415
+    return response

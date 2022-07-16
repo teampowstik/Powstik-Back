@@ -1,7 +1,7 @@
 from cgitb import reset
 from urllib import response
 from sqlalchemy import desc
-from Files import db, cors
+from Files import db
 from flask import jsonify
 from ..models import Order, OrderSchema, Order_Items, Order_ItemsSchema
 from ..models import Cart, CartSchema, User, Address
@@ -16,7 +16,12 @@ def isAddressThere(address_id):
 def isOrderItemThere(user_id, order_id, order_item_id):
     if not isOrderThere(order_id, user_id):
         return False
-    return db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first() is not None
+    return db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).first() is not None
+
+def isAddressofUsers(user_id, address_id):
+    if db.session.query(Address).filter(Address.address_id==address_id).filter(Address.user_id==user_id).first() is None:   
+        return False
+    return True
 
 def isNotJson():
     response=jsonify({"message":"Not a JSON"})
@@ -36,7 +41,7 @@ def AllOrdersByUser(id):
         order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order["order_id"]).all()
         order_items=Order_ItemsSchema(many=True).dump(order_items)
         order["order_items"]=order_items
-    response=jsonify(orders)
+    response=jsonify({"result":orders})
     response.status_code=200
     return response
 
@@ -63,7 +68,7 @@ def OrderItemByID(user_id, order_id, order_item_id):
         response=jsonify({"message":"Order Item Not Found"})
         response.status_code=404
         return response
-    order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).first()
+    order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).first()
     order_item=Order_ItemsSchema().dump(order_item)
     response=jsonify(order_item)
     response.status_code=200
@@ -97,6 +102,7 @@ def AddOrder(user_id=None, address_id=None):
             status="Processing"
             )
         db.session.add(order_item)
+    items=db.session.query(Cart).filter(Cart.customer_id==user_id).delete()
     db.session.commit()
     response=jsonify({"message":"Order added"})
     response.status_code=201
@@ -113,6 +119,11 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
         return response
     if not user_id or not order_id or not address_id:
         response=jsonify({"message":"Missing user_id, order_id or address_id"})
+        response.status_code=404
+    if not isAddressofUsers(user_id, address_id):
+        response=jsonify({"message":"Address not found"})
+        response.status_code=404
+        return response
     try:
         order=db.session.query(Order).filter(Order.order_id==order_id).first()
         order.address_id=address_id
@@ -129,12 +140,11 @@ def UpdateOrder(user_id=None, order_id=None, address_id=None):
 # for sellers to change status of the order
 def UpdateOrderItem(user_id, order_id, order_item_id, status, tracking_id, tracking_number):
     if not isOrderThere(order_id, user_id):
-        response = jsonify({'message': 'Order not found'})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+        response = jsonify({'message': 'Order not found'})   
         response.status_code=404
         return response
     try:
-        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).filter(Order_Items.order_id==order_id).first()
         order_item.status=status
         # Processing
         # In Transit
@@ -183,7 +193,7 @@ def RemoveOrderItem(user_id, order_id, order_item_id):
         response.status_code=404
         return response
     try:
-        order_item=db.session.query(Order_Items).filter(Order_Items.order_item_id==order_item_id).filter(Order_Items.order_id==order_id).first()
+        order_item=db.session.query(Order_Items).filter(Order_Items.order_items_id==order_item_id).filter(Order_Items.order_id==order_id).first()
         db.session.delete(order_item)
         db.session.commit()
         response=jsonify({"message":"Order item removed"})

@@ -13,6 +13,7 @@ def createApp(configClass = Config):
     app = Flask(__name__)
     app.config.from_object(configClass)
     cors = CORS(app, resources={r"/foo": {"origins": "*"}})
+    cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
     app.config['CORS_HEADERS'] = 'Content-Type'
     db.init_app(app)
 
@@ -44,6 +45,9 @@ def createApp(configClass = Config):
 
     from Files.authenticaion.routes import authentication
     app.register_blueprint(authentication)
+    
+    from Files.address.routes import address
+    app.register_blueprint(address)
 
     from Files.address.routes import address
     app.register_blueprint(address)
@@ -58,12 +62,3 @@ def createApp(configClass = Config):
         db.create_all()
     
     return app
-
-def cors(function):
-    def wrapper(*args, **kwargs):
-        response = function(*args, **kwargs)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE')
-        return response
-    return wrapper

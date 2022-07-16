@@ -1,18 +1,6 @@
-from flask_restful import reqparse
 from flask import jsonify
 from Files import db
-from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema
-
-
-add_product_args = reqparse.RequestParser()
-add_product_args.add_argument('name', type=str, required=True, help='Product name cannot be blank!')
-add_product_args.add_argument('description', type=str, required=True, help='Product description cannot be blank!')
-add_product_args.add_argument('price', type=float, required=True, help='Product price cannot be blank!')
-add_product_args.add_argument('image', type=str, required=True, help='Product image cannot be blank!')
-add_product_args.add_argument('discount', type=float, required=True, help='Product discount cannot be blank!')
-add_product_args.add_argument('qty_left', type=int, required=True, help='Product qty cannot be blank!')
-add_product_args.add_argument('category', type=int, required=True, help='Product category cannot be blank!')
-add_product_args.add_argument('related_products', type=str, required=True, help='Product related products cannot be blank!')
+from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema, Category
 
 def check_product_seller_relation(product_id, seller_id):
     result=db.session.query(Product).filter(Product.product_id==product_id).filter(Product.seller_id==seller_id).first()
@@ -30,15 +18,30 @@ def check_is_seller(seller_id):
 
 def get_all_products():
     result=Product.query.all()
-    product_schema=ProductSchema(many=True)
-    output = product_schema.dump(result)
-    return {"result":output}
+    response=[]
+    for product in result:
+        output=jsonify(ProductSchema(many=False).dump(product))
+        output=output.get_json()
+        categories=db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id=="P"+str(output["product_id"]))
+        output["categories"] = []
+        for category in categories:
+            id=category.category_id
+            res=db.session.query(Category).filter(Category.category_id==id).first()
+            output["categories"].append(res.category_name)
+        response.append(output)
+
+    response=jsonify({"result":response})
+    response.status_code=200
+    return response
 
 def products_by_category(category_name):
-    records = db.session.query(BelongsToCategory).filter(
-        BelongsToCategory.category_name==category_name).filter(
-            BelongsToCategory.pro_con_id!=None).filter(
-                BelongsToCategory.pro_con_id.startswith('P')).all()
+    category_name=category_name.lower()
+    category=db.session.query(Category).filter(Category.category_name==category_name).first()
+    if not category:
+        response=jsonify({"message": "Category does not exist"})
+        response.status_code=400
+        return response
+    records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_id==category.category_id).filter(BelongsToCategory.pro_con_id.startswith('P')).all()
     result = []
     for record in records:
         output = jsonify(
@@ -48,11 +51,13 @@ def products_by_category(category_name):
         output = output["pro_con_id"]
         output = int(output[1:])
         temp = db.session.query(Product).filter(Product.product_id==output).first()
-        consultation = ProductSchema(many=False).dump(temp)
+        product = ProductSchema(many=False).dump(temp)
         result.append(
-            jsonify(consultation).get_json()
+            jsonify(product).get_json()
         )
-    return result
+    response=jsonify({"result":result})
+    response.status_code=200
+    return response
     
 def get_product_by_id(id):
     result = db.session.query(Product).filter(Product.product_id==id).first()
@@ -62,10 +67,12 @@ def get_product_by_id(id):
     result = ProductSchema(many=False).dump(result)
     result["categories"] = []
     for category in categories:
-        result["categories"].append(category.category_name)
+        id=category.category_id
+        res=db.session.query(Category).filter(Category.category_id==id).first()
+        result["categories"].append(res.category_name)
     return result
 
-def add_product(name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+def add_product(name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})
@@ -80,7 +87,7 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     #1. Adding Product
     record=Product(name=name,description=description,price=price,image=image,
                     discount=discount,effective_price=float(price)-(float(discount)*float(price)/100),
-                    qty_left=qty_left,related_products=related_products,seller_id=seller_id)
+                    qty_left=qty_left,vendor_info=vendor_info,seller_id=seller_id)
     db.session.add(record)
     
     #2. Getting Prod ID
@@ -91,29 +98,25 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     product_id = "P" + str(product_id)
         
     #3. Adding Categories
+    categories = categories.replace(" ","")
     categories=categories.split(",")
     for CategoryName in categories:
-        temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-        if not temp is None:
-            output = jsonify(
-                BelongsToCategorySchema(many=False).dump(temp)
-                )
-            BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                        pro_con_id = product_id)
-            db.session.add(BelongsTo)
+        CategoryName=CategoryName.lower()
+        category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+        if category:
+            record=BelongsToCategory(pro_con_id=product_id,category_id=category.category_id)
+            db.session.add(record)
         else:
             response=jsonify({"message": "Category does not exist"})
             response.status_code=400
             return response
-
-    db.session.commit()
     
     db.session.commit()
     response=jsonify({"message": "Product added successfully"})
     response.status_code=201
     return response
 
-def update_product(product_id, name, description, price, image, discount, qty_left, categories, related_products, seller_id):
+def update_product(product_id, name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})
@@ -139,7 +142,7 @@ def update_product(product_id, name, description, price, image, discount, qty_le
     product.discount=discount
     product.effective_price=float(price)-(float(discount)*float(price)/100)
     product.qty_left=qty_left
-    product.related_products=related_products
+    product.vendor_info=vendor_info
     db.session.commit()
     
     #2. Delete Current Product Category Mapping
@@ -149,19 +152,19 @@ def update_product(product_id, name, description, price, image, discount, qty_le
     
     # 3. Adding new Product Category Mapping
     product_id = "P" + str(product_id)
+    categories = categories.replace(" ","")
+    categories=categories.split(",")
     for CategoryName in categories:
-        temp = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name == CategoryName).first()
-        if not temp is None:
-            output = jsonify(
-                BelongsToCategorySchema(many=False).dump(temp)
-                )
-            BelongsTo = BelongsToCategory(category_name = output.json["category_name"], 
-                                        pro_con_id = product_id)
-            db.session.add(BelongsTo)
+        CategoryName=CategoryName.lower()
+        category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+        if category:
+            record=BelongsToCategory(pro_con_id=product_id,category_id=category.category_id)
+            db.session.add(record)
         else:
             response=jsonify({"message": "Category does not exist"})
             response.status_code=400
             return response
+
     db.session.commit()
     response=jsonify({"message": "Product updated successfully"})
     response.status_code=202

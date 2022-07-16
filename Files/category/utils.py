@@ -1,19 +1,21 @@
 from Files import db
-from ..models import BelongsToCategory, BelongsToCategorySchema
+from ..models import BelongsToCategory, BelongsToCategorySchema, Category, CategorySchema
 from flask import jsonify
 
 def AllCategories():
-    result = db.session.query(BelongsToCategory).filter(BelongsToCategory.pro_con_id==None).all()
-    output = BelongsToCategorySchema(many=True).dump(result)
+    result = db.session.query(Category).all()
+    output = CategorySchema(many=True).dump(result)
     return {"result":output}
 
-def AddCategory(category_name):
+def AddCategory(category_name,description,image):
     try:
         #check if category already exists
-        result = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==category_name).first()
+        result = db.session.query(Category).filter(Category.category_name==category_name).first()
         if result:
-            return {'message': 'Category Already Exists'}
-        result = BelongsToCategory(category_name = category_name, pro_con_id = None)
+            response=jsonify({"message":"Category Already Exists"})
+            response.status_code = 400 
+            return response
+        result = Category(category_name = category_name, description = description, image = image)
         db.session.add(result)
         db.session.commit()
         response=jsonify({"message":"Category Added"})
@@ -25,14 +27,16 @@ def AddCategory(category_name):
         return response
 
 
-def UpdateCategoryName(name, new_name):
-    result = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==name).first()
+def UpdateCategoryName(name, new_name, description, image):
+    result = db.session.query(Category).filter(Category.category_name==
+                                                            name).first()
     if result:
         result.category_name = new_name
+        result.description = description
+        result.image = image
         db.session.commit()
         response=jsonify({
-            'message': 'Category Name Patched',
-            'category-name': new_name
+            'message': 'Category Name Patched'
         })
         response.status_code = 200
         return response
@@ -43,10 +47,12 @@ def UpdateCategoryName(name, new_name):
 
 def RemoveCategoryRecord(CategoryName):
     try:
-        records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_name==CategoryName).all()
+        category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
+        records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_id==category.category_id).all()
         for record in records:
             if record:
                 db.session.delete(record)
+        db.session.delete(category)
         db.session.commit()
         return True
     except:

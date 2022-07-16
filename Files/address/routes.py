@@ -8,14 +8,14 @@ from flask_cors import cross_origin,CORS
 address = Blueprint('address', __name__, url_prefix='/address')
 cors = CORS(address, resources={r"/foo": {"origins": "*"}})
 
-@address.post('/add/<int:user_id>')
+@address.post('/add/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def add_address(user_id):
+def add_address():
     if request.is_json:
         jwt_user_id = get_jwt_identity()
-        if jwt_user_id != user_id:
-            return {"message": "You are not authorized to add an address"}, 401
+        # if jwt_user_id != user_id:
+            # return {"message": "You are not authorized to add an address"}, 401
         line1 = request.json.get('line1')
         line2 = request.json.get('line2')
         city = request.json.get('city')
@@ -23,7 +23,7 @@ def add_address(user_id):
         country = request.json.get('country')
         zipcode = request.json.get('zipcode')
         password = request.json.get('password')
-        result = add_address_util(user_id, line1, line2, city, state, country, zipcode, password)
+        result = add_address_util(jwt_user_id, line1, line2, city, state, country, zipcode, password)
         return result
     return {"message": "Request must be JSON"}, 415
 
@@ -35,37 +35,40 @@ def get_addresses():
         return {"message": "No addresses found"}, 404
     return jsonify(result)
 
-@address.get('/<int:user_id>')
-def retrieve_address_byID(user_id):
+@address.get('/user')
+@jwt_required()
+@cross_origin(origin='*',headers=['Content- Type','Authorization'])
+def retrieve_address_byID():
+    user_id=get_jwt_identity()
     result = retrieve_address_byUserID(user_id)
     if result is None:
         return {"message": "No addresses found"}, 404
     return jsonify(result)
 
-@address.patch('/<int:user_id> <int:address_id>')
+@address.patch('/<int:address_id>')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def update_address(user_id, address_id):
+def update_address(address_id):
     if request.is_json:
         jwt_user_id = get_jwt_identity()
-        if jwt_user_id != user_id:
-            return {"message": "You are not authorized to update this address"}, 401
+        # if jwt_user_id != user_id:
+        #     return {"message": "You are not authorized to update this address"}, 401
         line1 = request.json.get('line1')
         line2 = request.json.get('line2')
         city = request.json.get('city')
         state = request.json.get('state')
         country = request.json.get('country')
         zipcode = request.json.get('zipcode')
-        result = update_address_util(user_id, address_id, line1, line2, city, state, country, zipcode)
+        result = update_address_util(jwt_user_id, address_id, line1, line2, city, state, country, zipcode)
         return result
     return {"message": "Request must be JSON"}, 415
 
-@address.delete('/<int:user_id> <int:address_id>')
+@address.delete('/<int:address_id>')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
-def delete_address(user_id, address_id):
+def delete_address(address_id):
     jwt_user_id = get_jwt_identity()
-    if jwt_user_id != user_id:
-        return {"message": "You are not authorized to delete this address"}, 401
-    result = remove_address(user_id, address_id)
+    # if jwt_user_id != user_id:
+        # return {"message": "You are not authorized to delete this address"}, 401
+    result = remove_address(jwt_user_id, address_id)
     return result

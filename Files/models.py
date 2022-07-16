@@ -49,7 +49,7 @@ class Consultation (db.Model):
     cost = db.Column(db.Numeric(10,2),nullable=False)
     discount = db.Column(db.Integer, nullable = False)
     effective_price = db.Column(db.Integer, nullable = False)
-    related = db.Column(db.String, nullable=True)
+    vendor_info = db.Column(db.String, nullable=True)
     bio_data = db.Column(db.String, nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
 
@@ -66,7 +66,7 @@ class Product (db.Model):
     price = db.Column(db.Integer, nullable = False)
     discount = db.Column(db.Integer, nullable = False)
     effective_price = db.Column(db.Integer, nullable = False)
-    related_products = db.Column(db.String, nullable=True)
+    vendor_info = db.Column(db.String, nullable=True)
     seller_id = db.Column(db.Integer, db.ForeignKey("Seller.seller_id"))
     
     def __repr__(self):
@@ -87,7 +87,7 @@ class Order (db.Model):
     __tablename__ = "Order"
     order_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
     address_id = db.Column(db.Integer, db.ForeignKey("Address.address_id"))
-    amount = db.Column(db.Integer,nullable=False)
+    amount = db.Column(db.Numeric(10,2),nullable=False)
     date = db.Column(db.DateTime(timezone=True), server_default = func.now())
     customer_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
     
@@ -99,14 +99,20 @@ class Order_Items(db.Model):
     quantity = db.Column(db.Integer,nullable=False)
     price = db.Column(db.Numeric(10,2),nullable=False)
     status = db.Column(db.String(20), nullable=True)
-    tracking_id = db.Column(db.String, nullable=False)
+    tracking_id = db.Column(db.String, nullable=True)
     tracking_link = db.Column(db.String, nullable=True)
     
+class Category (db.Model):
+    __tablename__ = 'Category'
+    category_id = db.Column(db.Integer, primary_key=True, autoincrement = True)
+    category_name = db.Column(db.String(80), nullable=False, unique=True)
+    description = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
 class BelongsToCategory (db.Model):
     __tablename__ = "BelongsToCategory"
     table_sno = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    category_name = db.Column(db.String, nullable=False)
-    pro_con_id = db.Column(db.String, nullable=True)  
+    category_id = db.Column(db.Integer, db.ForeignKey("Category.category_id"))
+    pro_con_id = db.Column(db.String, nullable=True)
 
 class Trending (db.Model): 
     __tablename__ = "Trending"
@@ -160,12 +166,12 @@ class Order_ItemsSchema(ma.Schema):
 class BelongsToCategorySchema(ma.Schema):
     class Meta:
         model = BelongsToCategory
-        fields = ('table_sno', 'category_name', 'pro_con_id')
+        fields = ('table_sno', 'category_id', 'pro_con_id')
 
 class ProductSchema(ma.Schema):
     class Meta:
         model = Product
-        fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'related_products','seller_id')
+        fields = ('product_id', 'name', 'qty_left', 'image', 'description', 'price', 'discount', 'effective_price', 'category', 'vendor_info','seller_id')
 
 class TrendingSchema(ma.Schema):
     class Meta:
@@ -186,9 +192,14 @@ class ConsultationSchema(ma.Schema):
     class Meta:
         model = Consultation
         fields = ('consultation_id', 'consultation', 'consultant', 'description', 'availability', 'image', 
-                  'cost', 'discount', 'effective_price', 'related', 'bio_data', 'seller_id')
+                  'cost', 'discount', 'effective_price', 'vendor_info', 'bio_data', 'seller_id')
 
 class SellerSchema(ma.Schema):
     class Meta:
         model = Seller
         fields = ('seller_id', 'shop_name', 'shop_url')
+
+class CategorySchema(ma.Schema):
+    class Meta:
+        model = Category
+        fields = ('category_id', 'category_name', 'description', 'image')
