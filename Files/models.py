@@ -150,7 +150,7 @@ class Reviews (db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         model = User
-        fields = ('user_id', 'first_name', 'last_name', 'email', 'phone', 'is_seller', 'address', 'plot_no', 'city', 'state', 'country', 'pincode', 'gender', 'profle_img')
+        fields = ('user_id', 'first_name', 'last_name', 'email', 'password', 'phone', 'is_seller', 'address', 'plot_no', 'city', 'state', 'country', 'pincode', 'gender', 'profle_img')
 
 class CartSchema(ma.Schema):
     class Meta:
