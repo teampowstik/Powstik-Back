@@ -144,8 +144,8 @@ class Reviews (db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     review = db.Column(db.String(80), nullable=False)
-    review_for = db.Column(db.String(10), nullable=False)
     pro_con_id = db.Column(db.String, nullable=True)
+    # review_date = db.Column(db.Date, nullable=False)
 
 class UserSchema(ma.Schema):
     class Meta:
@@ -195,7 +195,7 @@ class CouponsSchema(ma.Schema):
 class ReviewsSchema(ma.Schema):
     class Meta:
         model = Reviews
-        fields = ('review_id', 'user_id', 'rating', 'review', 'review_for', 'pro_con_id')
+        fields = ('review_id', 'user_id', 'rating', 'review', 'pro_con_id')
 
 class ConsultationSchema(ma.Schema):
     class Meta:
