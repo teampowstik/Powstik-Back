@@ -26,25 +26,25 @@ def remove_user(user_id):
     db.session.commit()
     return {"message": "User Successfully deleted"}, 201
 
-def update_user(user_id, first_name, last_name, email, password, phone):
+def update_user(user_id, first_name, last_name, email, phone, address, city, state, pincode, country, gender, plot_no, profile_img):
     user=db.session.query(User).filter(User.user_id==user_id).first()
-    user_schema=UserSchema()
-    output = user_schema.dump(user)
 
-    is_pass_correct = check_password_hash(output["password"], password)
+    user.first_name=first_name
+    user.last_name=last_name
+    user.email=email
+    user.phone=phone
+    user.address=address
+    user.city=city
+    user.state=state
+    user.pincode=pincode
+    user.country=country
+    user.gender=gender
+    user.plot_no=plot_no
+    user.profile_img=profile_img
 
-    if is_pass_correct:
-        user.first_name=first_name
-        user.last_name=last_name
-        user.email=email
-        user.phone=phone
-
-        db.session.commit()
-        response=jsonify({"message": "User Successfully updated"})
-        response.status_code = 201
-        return response
-    response=jsonify({"message": "Incorrect Password"})
-    response.status_code = 401
+    db.session.commit()
+    response=jsonify({"message": "User Successfully updated"})
+    response.status_code = 201
     return response
 
 def change_password(user_id, old_password, new_password):
