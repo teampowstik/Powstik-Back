@@ -4,8 +4,10 @@ from ..models import User, UserSchema, Seller
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import create_access_token, create_refresh_token
 from sqlalchemy import or_
+from pydantic import EmailStr, validate_arguments
 
-def login_user(email, password):
+@validate_arguments
+def login_user(email:EmailStr, password:str):
     user=db.session.query(User).filter(User.email==email).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)
@@ -26,8 +28,8 @@ def login_user(email, password):
     response.status_code = 204
     return response
 
-def register_user(first_name, last_name, email, password, phone, is_seller):
-
+@validate_arguments
+def register_user(first_name:str, last_name:str, email:EmailStr, password:str, phone:int, is_seller:bool):
     user=db.session.query(User).filter(or_(User.email==email,User.phone==phone)).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)

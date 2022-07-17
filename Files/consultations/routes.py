@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from .utils import AllConsultations, AddConsultation, RemoveConsultation, UpdateConsultation, ConsultationByCategory, ConsultationByID, check_consultation_seller_relation, check_is_seller
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_cors import cross_origin, CORS
-
+from pydantic import ValidationError
 
 consultation_blueprint = Blueprint('consultation', __name__, url_prefix='/consultation')
 cors = CORS(consultation_blueprint, resources={r"/foo": {"origins": "*"}})
@@ -30,39 +30,51 @@ def GetConsultationsbyID(consultation_id):
 @consultation_blueprint.get('bycategory/<string:category>')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def GetConsultbyCategory(category):
-    result = ConsultationByCategory(category)
-    if result is None:
-        response={}
-        return response, 204
-    return result
+    try:
+        result = ConsultationByCategory(category)
+        if result is None:
+            response={}
+            return response, 204
+        return result
+    except ValidationError as err:
+        response = jsonify({'message': err.errors()})
+        return response, 400
 
 @consultation_blueprint.post('/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def NewConsultation():
-    if request.is_json:
-        seller_id = get_jwt_identity()  
-        res = request.get_json()
-        res['seller_id'] = seller_id
-        response = AddConsultation(**res)
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+    try:
+        if request.is_json:
+            seller_id = get_jwt_identity()  
+            res = request.get_json()
+            res['seller_id'] = seller_id
+            response = AddConsultation(**res)
+            return response, response.status_code
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as err:
+        response = jsonify({'message': err.errors()})
+        return response, 400
 
 @consultation_blueprint.patch('/<int:consultation_id>')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def PatchConsultation(consultation_id):
-    if request.is_json:
-        seller_id = get_jwt_identity()  
-        res = request.get_json()
-        res['consultation_id'] = consultation_id
-        res['seller_id']=seller_id
-        response = UpdateConsultation(**res)
-        return response, response.status_code
+    try:
+        if request.is_json:
+            seller_id = get_jwt_identity()  
+            res = request.get_json()
+            res['consultation_id'] = consultation_id
+            res['seller_id']=seller_id
+            response = UpdateConsultation(**res)
+            return response, response.status_code
 
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as err:
+        response = jsonify({'message': err.errors()})
+        return response, 400
         
 
 @consultation_blueprint.delete('/<int:consultation_id>')

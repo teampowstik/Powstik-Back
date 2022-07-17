@@ -1,6 +1,7 @@
 from Files import db
 from flask import jsonify
 from ..models import Cart, CartSchema, Product, Consultation
+from pydantic import validate_arguments
 
 #implicitly used functions
 def is_Already_in_Cart(user_id, pro_con_id, type):
@@ -15,7 +16,8 @@ def is_Already_in_Cart(user_id, pro_con_id, type):
 
 
 # route Functions
-def AddCart(user_id, item_id, type):
+@validate_arguments
+def AddCart(user_id:int, item_id:int, type:str):
     if is_Already_in_Cart(user_id, item_id, type):
         response=jsonify({"message": "Item already in cart"})
         response.status_code=409
@@ -23,6 +25,10 @@ def AddCart(user_id, item_id, type):
     
     if type=='product':
         item=Product.query.filter_by(product_id=item_id).first()
+        if not item:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         qty_left=int(item.qty_left)
         if qty_left<1:
             response=jsonify({"message":"Not enough quantity"})
@@ -33,6 +39,10 @@ def AddCart(user_id, item_id, type):
         cart=Cart(customer_id=user_id, pro_con_id=pro_con_id, quantity=1, item_type="cart", item_total=effective_price, price=effective_price)
     elif type=='consultation':
         item=Consultation.query.filter_by(consultation_id=item_id).first()
+        if not item:
+            response=jsonify({"message":"Consultation not found"})
+            response.status_code=404
+            return response
         effective_price=item.effective_price
         pro_con_id='C'+str(item_id)
         cart=Cart(customer_id=user_id, pro_con_id=pro_con_id, quantity=1, item_type="cart", item_total=effective_price, price=effective_price)
@@ -79,10 +89,15 @@ def GetCart(user_id):
     response={"result":response,"total_cart_price":total_cart_price}
     return response
 
-def increase_quantity(user_id, pro_con_id, type):
+@validate_arguments
+def increase_quantity(user_id:int, pro_con_id:int, type:str):
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         #check if product has enough quantity left
         item=Product.query.filter_by(product_id=pro_con_id).first()
         qty_left=int(item.qty_left)
@@ -98,6 +113,12 @@ def increase_quantity(user_id, pro_con_id, type):
         response.status_code=200
         return response
     elif type=='consultation':
+        id='C'+str(pro_con_id)
+        cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         response=jsonify({"message":"Quantity is limited to 1"})
         response.status_code=400
         return response
@@ -106,10 +127,15 @@ def increase_quantity(user_id, pro_con_id, type):
         response.status_code=400
         return response
 
-def decrease_quantity(user_id, pro_con_id, type):
+@validate_arguments
+def decrease_quantity(user_id:int, pro_con_id:int, type:str):
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         if cart.quantity==1:
             response=jsonify({"message":"Quantity cannot be decreased"})
             response.status_code=400
@@ -121,6 +147,12 @@ def decrease_quantity(user_id, pro_con_id, type):
         response.status_code=200
         return response
     elif type=='consultation':
+        id='C'+str(pro_con_id)
+        cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         response=jsonify({"message":"Quantity is limited to 1"})
         response.status_code=400
         return response
@@ -130,7 +162,8 @@ def decrease_quantity(user_id, pro_con_id, type):
         response.status_code=400
         return response
 
-def delete_item(user_id, pro_con_id, type):
+@validate_arguments
+def delete_item(user_id:int, pro_con_id:int, type:str):
     if not is_Already_in_Cart(user_id, pro_con_id, type):
         response=jsonify({"message":"Item not in cart"})
         response.status_code=400
@@ -138,6 +171,10 @@ def delete_item(user_id, pro_con_id, type):
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         db.session.delete(cart)
         db.session.commit()
         response=jsonify({"message":"Item deleted"})
@@ -146,6 +183,10 @@ def delete_item(user_id, pro_con_id, type):
     elif type=='consultation':
         id='C'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id).first()
+        if not cart:
+            response=jsonify({"message":"Product not found"})
+            response.status_code=404
+            return response
         db.session.delete(cart)
         db.session.commit()
         response=jsonify({"message":"Item deleted"})

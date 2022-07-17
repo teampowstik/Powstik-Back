@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from .utils import get_all_products, get_product_by_id, products_by_category, add_product, update_product, remove_product
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_cors import cross_origin, CORS
+from pydantic import ValidationError
 
 product = Blueprint('product', __name__, url_prefix='/product')
 cors = CORS(product, resources={r"/foo": {"origins": "*"}})
@@ -28,41 +29,52 @@ def get_product(id):
 @product.get('/bycategory/<string:category_name>')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def get_product_by_category_name(category_name):
-    result = products_by_category(category_name)
-    if result is None:
-        response={}
-        return response, 204
-    return result
+    try:
+        result = products_by_category(category_name)
+        if result is None:
+            response={}
+            return response, 204
+        return result
+    except ValidationError as e:
+        response = jsonify({"message": e.errors()})
+        return response, 400
 
 @product.post('/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def post_product():
-    if request.is_json:
-        seller_id = get_jwt_identity()  
-        res = request.get_json()
-        res['seller_id'] = seller_id
-        response = add_product(**res)
+    try:
+        if request.is_json:
+            seller_id = get_jwt_identity()  
+            res = request.get_json()
+            res['seller_id'] = seller_id
+            response = add_product(**res)
 
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
-        
+            return response, response.status_code
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as e:
+        response = jsonify({"message": e.errors()})
+        return response, 400
 
 @product.patch("/<int:product_id>")
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def patch_product(product_id):
-    if request.is_json:
-        seller_id = get_jwt_identity()
-        res = request.get_json()
-        res["product_id"] = product_id
-        res['seller_id'] = seller_id
-        response = update_product(**res)
+    try:
+        if request.is_json:
+            seller_id = get_jwt_identity()
+            res = request.get_json()
+            res["product_id"] = product_id
+            res['seller_id'] = seller_id
+            response = update_product(**res)
 
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+            return response, response.status_code
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as e:
+        response = jsonify({"message": e.errors()})
+        return response, 400
 
 @product.delete("/<int:product_id>")
 @jwt_required()

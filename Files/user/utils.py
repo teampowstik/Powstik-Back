@@ -1,8 +1,8 @@
-from flask import request, jsonify
+from flask import jsonify
 from Files import db
 from ..models import User, UserSchema
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import or_
+from pydantic import EmailStr, HttpUrl, validate_arguments
 
 def retrieve_all_users():
     user_details = User.query.all()
@@ -26,7 +26,8 @@ def remove_user(user_id):
     db.session.commit()
     return {"message": "User Successfully deleted"}, 201
 
-def update_user(user_id, first_name, last_name, email, phone, address, city, state, pincode, country, gender, plot_no, profile_img):
+@validate_arguments
+def update_user(user_id:int, first_name:str, last_name:str, email:EmailStr, phone:str, address:str, city:str, state:str, pincode:int, country:str, gender:str, plot_no:str, profile_img:HttpUrl):
     user=db.session.query(User).filter(User.user_id==user_id).first()
 
     user.first_name=first_name
@@ -47,7 +48,8 @@ def update_user(user_id, first_name, last_name, email, phone, address, city, sta
     response.status_code = 201
     return response
 
-def change_password(user_id, old_password, new_password):
+@validate_arguments
+def change_password(user_id:int, old_password:str, new_password:str):
     user=db.session.query(User).filter(User.user_id==user_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)

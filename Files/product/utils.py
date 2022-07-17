@@ -1,6 +1,7 @@
 from flask import jsonify
 from Files import db
 from ..models import User, UserSchema,Product, ProductSchema, BelongsToCategory, BelongsToCategorySchema, Category
+from pydantic import HttpUrl, validate_arguments
 
 def check_product_seller_relation(product_id, seller_id):
     result=db.session.query(Product).filter(Product.product_id==product_id).filter(Product.seller_id==seller_id).first()
@@ -34,7 +35,8 @@ def get_all_products():
     response.status_code=200
     return response
 
-def products_by_category(category_name):
+@validate_arguments
+def products_by_category(category_name:str):
     category_name=category_name.lower()
     category=db.session.query(Category).filter(Category.category_name==category_name).first()
     if not category:
@@ -72,7 +74,8 @@ def get_product_by_id(id):
         result["categories"].append(res.category_name)
     return result
 
-def add_product(name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
+@validate_arguments
+def add_product(name:str, description:str, price:float, image:HttpUrl, discount:float, qty_left:int, categories:str, vendor_info:str, seller_id:int):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})
@@ -116,7 +119,8 @@ def add_product(name, description, price, image, discount, qty_left, categories,
     response.status_code=201
     return response
 
-def update_product(product_id, name, description, price, image, discount, qty_left, categories, vendor_info, seller_id):
+@validate_arguments
+def update_product(product_id:int, name:str, description:str, price:float, image:HttpUrl, discount:float, qty_left:int, categories:str, vendor_info:str, seller_id:int):
     
     if check_is_seller(seller_id) == False:
         response=jsonify({"message": "You are not a seller"})

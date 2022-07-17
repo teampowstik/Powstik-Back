@@ -1,8 +1,10 @@
 from Files import db
 from flask import jsonify
 from ..models import Cart, CartSchema, Product, Consultation
+from pydantic import validate_arguments
 
-def AddWishlist(user_id, item_id, type):
+@validate_arguments
+def AddWishlist(user_id:int, item_id:int, type:str):
     if type=='product':
         item=Product.query.filter_by(product_id=item_id).first()
         effective_price=item.effective_price
@@ -50,7 +52,8 @@ def GetWishlist(user_id):
     response={"result":response}
     return response
 
-def delete_item(user_id, pro_con_id, type):
+@validate_arguments
+def delete_item(user_id:int, pro_con_id:int, type:str):
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id, item_type='wishlist').first()
@@ -72,7 +75,8 @@ def delete_item(user_id, pro_con_id, type):
         response.status_code=400
         return response
 
-def move_to_cart(user_id, pro_con_id, type):
+@validate_arguments
+def move_to_cart(user_id:int, pro_con_id:int, type:str):
     if type=='product':
         id='P'+str(pro_con_id)
         cart=Cart.query.filter_by(customer_id=user_id, pro_con_id=id, item_type='wishlist').first()

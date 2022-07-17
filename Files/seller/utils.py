@@ -1,10 +1,8 @@
-from urllib import response
-from flask import request, jsonify
+from flask import jsonify
 from Files import db
 from ..models import User, Seller, UserSchema, SellerSchema, Product, ProductSchema, Consultation, ConsultationSchema
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
-from sqlalchemy import or_
+from pydantic import EmailStr, HttpUrl, validate_arguments
 
 def retrieve_all_sellers():
     sellers=db.session.query(Seller).all()
@@ -16,7 +14,6 @@ def retrieve_all_sellers():
         output = user_schema.dump(user)
         seller.update(output)
     return jsonify({"result":seller_output})
-
 
 def retrieve_seller_byID(user_id):
     user_details=db.session.query(User).filter(User.user_id==user_id).first()
@@ -40,8 +37,8 @@ def remove_seller(user_id):
     db.session.commit()
     return {"message": "User Successfully deleted"}, 201
 
-
-def update_seller(seller_id, first_name, last_name, email, password, phone, shop_name, shop_url):
+@validate_arguments
+def update_seller(seller_id:int, first_name:str, last_name:str, email:EmailStr, password:str, phone:str, shop_name:str, shop_url:HttpUrl):
     user=db.session.query(User).filter(User.user_id==seller_id).first()
     seller=db.session.query(Seller).filter(Seller.seller_id==seller_id).first()
     user_schema=UserSchema()
@@ -65,7 +62,8 @@ def update_seller(seller_id, first_name, last_name, email, password, phone, shop
     response.status_code = 400
     return response
 
-def change_password(seller_id, old_password, new_password):
+@validate_arguments
+def change_password(seller_id:int, old_password:str, new_password:str):
     user=db.session.query(User).filter(User.user_id==seller_id).first()
     user_schema=UserSchema()
     output = user_schema.dump(user)

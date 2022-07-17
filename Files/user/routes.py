@@ -5,6 +5,7 @@ from sqlalchemy import false, true
 from .utils import change_password, retrieve_all_users, retrieve_user_byID, remove_user, update_user
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_cors import cross_origin,CORS
+from pydantic import ValidationError
 
 user = Blueprint('user', __name__, url_prefix='/user')
 cors = CORS(user, resources={r"/foo": {"origins": "*"}})
@@ -13,33 +14,41 @@ cors = CORS(user, resources={r"/foo": {"origins": "*"}})
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def patch_user_password():
-    if request.is_json:
-        jwt_user_id = get_jwt_identity()
-        old_password = request.json.get('old_password')
-        new_password = request.json.get('new_password')
-        response = change_password(jwt_user_id, old_password, new_password)
+    try:
+        if request.is_json:
+            jwt_user_id = get_jwt_identity()
+            old_password = request.json.get('old_password')
+            new_password = request.json.get('new_password')
+            response = change_password(jwt_user_id, old_password, new_password)
 
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+            return response, response.status_code
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as err:
+        response = jsonify({"message": err.errors()})
+        return response, 400
 
 @user.patch('/user_details/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def patch_user_details():
-    if request.is_json:
-        jwt_user_id = get_jwt_identity()
-        data=request.get_json()
-        data["user_id"]=jwt_user_id
-        res = update_user(**data)
-        if res is None:
-            response = jsonify({"message": "User not found"})
-            return response, 204
-        response = res
+    try:
+        if request.is_json:
+            jwt_user_id = get_jwt_identity()
+            data=request.get_json()
+            data["user_id"]=jwt_user_id
+            res = update_user(**data)
+            if res is None:
+                response = jsonify({"message": "User not found"})
+                return response, 204
+            response = res
 
-        return response, response.status_code
-    response = jsonify({"message": "Request must be JSON"})
-    return response, 415
+            return response, response.status_code
+        response = jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as e:
+        response = jsonify({"message": e.errors()})
+        return response, 400
 
 @user.get('/')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])

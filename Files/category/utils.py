@@ -1,13 +1,15 @@
 from Files import db
 from ..models import BelongsToCategory, BelongsToCategorySchema, Category, CategorySchema
 from flask import jsonify
+from pydantic import HttpUrl, validate_arguments
 
 def AllCategories():
     result = db.session.query(Category).all()
     output = CategorySchema(many=True).dump(result)
     return {"result":output}
 
-def AddCategory(category_name,description,image):
+@validate_arguments
+def AddCategory(category_name:str,description:str,image:HttpUrl):
     try:
         #check if category already exists
         result = db.session.query(Category).filter(Category.category_name==category_name).first()
@@ -26,8 +28,8 @@ def AddCategory(category_name,description,image):
         response.status_code = 400
         return response
 
-
-def UpdateCategoryName(name, new_name, description, image):
+@validate_arguments
+def UpdateCategoryName(name:str, new_name:str, description:str, image:HttpUrl):
     result = db.session.query(Category).filter(Category.category_name==
                                                             name).first()
     if result:
@@ -45,7 +47,8 @@ def UpdateCategoryName(name, new_name, description, image):
         response.status_code = 400
         return response
 
-def RemoveCategoryRecord(CategoryName):
+@validate_arguments
+def RemoveCategoryRecord(CategoryName:str):
     try:
         category=db.session.query(Category).filter(Category.category_name==CategoryName).first()
         records = db.session.query(BelongsToCategory).filter(BelongsToCategory.category_id==category.category_id).all()
