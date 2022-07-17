@@ -64,8 +64,20 @@ def use_coupon(coupon_code, user_id):
         response = jsonify({"message": "Minimum cart value not met"})
         return response, 404
 
+    total_cart_price = float(total_cart_price)
+    discount = float(coupon.discount)
+
+    amount_saved = ((discount/100)*float(total_cart_price))
+    updated_cart_price = total_cart_price - amount_saved
+
     coupon.used = "True"
     coupon.cart_id = 1
     db.session.commit()
 
-    return {result : coupon}
+    response = jsonify({"message": "Coupon used",
+                        "coupon_code": coupon_code,
+                        "amount_saved": amount_saved,
+                        "old_cart_price": total_cart_price,
+                        "updated_cart_price": updated_cart_price})
+
+    return response

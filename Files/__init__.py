@@ -49,9 +49,6 @@ def createApp(configClass = Config):
     from Files.address.routes import address
     app.register_blueprint(address)
 
-    from Files.address.routes import address
-    app.register_blueprint(address)
-
     from Files.reviews.routes import reviews
     app.register_blueprint(reviews)
 
