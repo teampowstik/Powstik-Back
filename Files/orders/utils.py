@@ -167,12 +167,8 @@ def RemoveOrder(user_id, order_id):
         return response
     try:
         #Remove Order
-        order=db.session.query(Order).filter(Order.order_id==order_id).first()
-        db.session.delete(order)
-        #Remove Order Items
-        order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order_id).all()
-        for order_item in order_items:
-            db.session.delete(order_item)
+        order_items=db.session.query(Order_Items).filter(Order_Items.order_id==order_id).delete()
+        order=db.session.query(Order).filter(Order.order_id==order_id).delete()
         #Commit after both orders and order items are deleted
         db.session.commit()
         response=jsonify({"message":"Order removed"})

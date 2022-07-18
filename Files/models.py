@@ -5,10 +5,10 @@ class User (db.Model):
     __tablename__ = "User"
     user_id=db.Column(db.Integer,primary_key=True)
     first_name=db.Column(db.String(20),nullable=False)
-    last_name=db.Column(db.String(20),nullable=False)
-    email=db.Column(db.String(120),unique=True,nullable=False)
-    password=db.Column(db.String(60),nullable=False)
-    phone=db.Column(db.String(10),unique=True,nullable=False)
+    last_name=db.Column(db.String(30),nullable=False)
+    email=db.Column(db.String(50),unique=True,nullable=False)
+    password=db.Column(db.String(300),nullable=False)
+    phone=db.Column(db.String(14),unique=True,nullable=False)
     is_seller=db.Column(db.Boolean,nullable=True, default = False) #customer (False) or seller (True)
 
     def __repr__(self):
@@ -19,11 +19,9 @@ class Cart (db.Model):
     cart_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     customer_id=db.Column(db.Integer, db.ForeignKey("User.user_id"))
     price=db.Column(db.Numeric(10,2),nullable=False)
-    pro_con_id = db.Column(db.String(20), 
-                           db.ForeignKey("Consultation.consultation_id"), 
-                           db.ForeignKey("Product.product_id"))
+    pro_con_id = db.Column(db.String(20))
     quantity=db.Column(db.Integer,nullable=False)
-    item_type=db.Column(db.String(20),nullable=False) # cart item or wishlist item 
+    item_type=db.Column(db.String(10),nullable=False) # cart item or wishlist item 
     item_total = db.Column(db.Numeric(10,2),nullable=False) # price * qty
     
     def __repr__(self):
@@ -33,7 +31,7 @@ class Seller (db.Model):
     __tablename__ = 'Seller'
     seller_id=db.Column(db.Integer, db.ForeignKey("User.user_id"),primary_key=True)
     shop_name=db.Column(db.String(20),nullable=False)
-    shop_url=db.Column(db.String(20),nullable=False)
+    shop_url=db.Column(db.String(100),nullable=False)
 
     def __repr__(self):
         return f"User('{self.seller_id}','{self.shop_name}')"
