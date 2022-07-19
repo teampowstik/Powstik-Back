@@ -1,10 +1,7 @@
 import datetime
-from flask import request, jsonify
+from flask import jsonify
 from Files import db
 from ..models import ReviewsSchema, Reviews,User, UserSchema
-from sqlalchemy import func
-from datetime import date
-
 
 def retrieve_reviews_by_productID(pro_con_id):
     review_details = db.session.query(Reviews).filter(Reviews.pro_con_id==pro_con_id).all()
@@ -12,7 +9,8 @@ def retrieve_reviews_by_productID(pro_con_id):
         return None
     review_schema=ReviewsSchema(many=True)
     output = review_schema.dump(review_details)
-    return {"result":output}
+    print(output)
+    return output
 
 def retrieve_reviews_by_userID(user_id):
     review_details = db.session.query(Reviews).filter(Reviews.user_id==user_id).all()
@@ -28,9 +26,9 @@ def add_reviews(pro_con_id, user_id, rating, review, type):
     elif type == 'consultation':
         pro_con_id = 'C' + str(pro_con_id)
 
-    review_date = date.today()
+    review_date = datetime.date.today()
     
-    review = Reviews(user_id=user_id, rating=rating, review=review, pro_con_id=pro_con_id)
+    review = Reviews(user_id=user_id, rating=rating, review=review, pro_con_id=pro_con_id, review_date=review_date)
     db.session.add(review)
     db.session.commit()
     return {"message": "Review added"}, 201

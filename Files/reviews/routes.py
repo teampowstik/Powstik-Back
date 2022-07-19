@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy import true
 from .utils import get_reviews_with_user_utils, retrieve_reviews_by_productID,add_reviews,retrieve_reviews_by_userID, get_reviews_with_user_utils, get_ratings_utils
 from flask_cors import cross_origin, CORS
 

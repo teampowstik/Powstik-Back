@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from torch import minimum
 from .utils import retrieve_all_coupons, retrieve_coupon_id, add_coupon, use_coupon
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
