@@ -15,8 +15,7 @@ def GetConsultations():
         response = jsonify({'message': 'No consultations found'})
 
         return response, 204
-    response = jsonify(result)
-    return response, 200
+    return result
 
 @consultation_blueprint.get('/<int:consultation_id>')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
@@ -35,8 +34,7 @@ def GetConsultbyCategory(category):
     if result is None:
         response={}
         return response, 204
-    response = jsonify({"result": result})
-    return response, 200
+    return result
 
 @consultation_blueprint.post('/')
 @jwt_required()
