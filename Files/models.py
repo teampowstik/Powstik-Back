@@ -134,9 +134,9 @@ class Reviews (db.Model):
     __tablename__ = "Reviews"
     review_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    review = db.Column(db.String(80), nullable=False)
-    pro_con_id = db.Column(db.String, nullable=True)
+    rating = db.Column(db.Float, nullable=False)
+    review = db.Column(db.String(80), nullable=True)
+    pro_con_id = db.Column(db.String, nullable=False)
     review_date = db.Column(db.Date, nullable=False)
 
 class UserSchema(ma.Schema):

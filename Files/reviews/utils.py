@@ -70,18 +70,17 @@ def get_ratings_utils(pro_con_id):
         no_of_responses+=1
         total_rating+=item["rating"]
         
-        if item["rating"]==5:
+        if round(item["rating"])==5:
             star_count_5+=1
-        elif item["rating"]==4:
+        elif round(item["rating"])==4:
             star_count_4+=1
-        elif item["rating"]==3:
+        elif round(item["rating"])==3:
             star_count_3+=1
-        elif item["rating"]==2:
+        elif round(item["rating"])==2:
             star_count_2+=1
-        elif item["rating"]==1:
+        elif round(item["rating"])==1:
             star_count_1+=1
     
     average_rating=total_rating/no_of_responses
     response = jsonify({"average_rating":average_rating,"no_of_verified_buyers": no_of_responses ,"star_count_5":star_count_5, "star_count_4":star_count_4, "star_count_3":star_count_3, "star_count_2":star_count_2, "star_count_1":star_count_1})
-    # response.append({"average_rating":average_rating,"no_of_verified_buyers":no_of_responses,"star_count_5":star_count_5,"star_count_4":star_count_4,"star_count_3":star_count_3,"star_count_2":star_count_2,"star_count_1":star_count_1})
     return response

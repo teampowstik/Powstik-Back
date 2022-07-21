@@ -28,8 +28,11 @@ def retrieve_coupon_id(coupon_id):
     output = coupons_schema.dump(coupon_details)
     return {"result":output}
 
-def add_coupon(discount, limit, minimum_cart_value):
-    coupon_code = generate_coupon_code()
+def add_coupon(discount, limit, minimum_cart_value, coupon_code):
+    
+    if coupon_code == None:
+        coupon_code = generate_coupon_code()
+
     used = "False"
 
     coupon = Coupons(discount=discount, limit=limit, minimum_cart_value=minimum_cart_value, coupon_code=coupon_code, used=used)

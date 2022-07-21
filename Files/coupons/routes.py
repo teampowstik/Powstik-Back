@@ -31,8 +31,11 @@ def post_coupons():
         discount = request.json.get('discount')
         limit = request.json.get('limit')
         minimum_cart_value = request.json.get('minimum_cart_value')
-        response = add_coupon(discount, limit, minimum_cart_value)
+        coupon_code = request.json.get('coupon_code')
+
+        response = add_coupon(discount, limit, minimum_cart_value, coupon_code)
         return response
+
     response = jsonify({"message": "Request must be JSON"})
     return response, 415
 
