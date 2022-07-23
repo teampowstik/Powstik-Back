@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from .utils import change_password, retrieve_all_sellers, retrieve_seller_byID, remove_seller, update_seller,retrieve_products_by_seller, retrieve_consultations_by_seller
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_cors import cross_origin,CORS
+from pydantic import ValidationError
 
 seller = Blueprint('seller', __name__, url_prefix='/seller')
 cors = CORS(seller, resources={r"/foo": {"origins": "*"}})
@@ -10,38 +11,46 @@ cors = CORS(seller, resources={r"/foo": {"origins": "*"}})
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def patch_user_password():
-    if request.is_json:
-        jwt_seller_id = get_jwt_identity()
-        old_password = request.json.get('old_password')
-        new_password = request.json.get('new_password')
-        response = change_password(jwt_seller_id, old_password, new_password)
-        return response, response.status_code
-    response=jsonify({"message": "Request must be JSON"})
-    return response, 415
+    try:
+        if request.is_json:
+            jwt_seller_id = get_jwt_identity()
+            old_password = request.json.get('old_password')
+            new_password = request.json.get('new_password')
+            response = change_password(jwt_seller_id, old_password, new_password)
+            return response, response.status_code
+        response=jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as err:
+        response = jsonify({"message": err.errors()})
+        return response, 400
 
 @seller.patch('/update_details/')
 @jwt_required()
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])
 def patch_user_details():
-    if request.is_json:
-        jwt_seller_id = get_jwt_identity()
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        email = request.json.get('email')
-        password = request.json.get('password')
-        phone = request.json.get('phone')
-        shop_name = request.json.get('shop_name')
-        shop_url = request.json.get('shop_url')
-        res = update_seller(jwt_seller_id, first_name, last_name, email, password, phone, shop_name, shop_url)
-        if res is None:
-            response = jsonify({"message": "No user found with this ID"})
-    
-            return response, 204
-        response = res
+    try:
+        if request.is_json:
+            jwt_seller_id = get_jwt_identity()
+            first_name = request.json.get('first_name')
+            last_name = request.json.get('last_name')
+            email = request.json.get('email')
+            password = request.json.get('password')
+            phone = request.json.get('phone')
+            shop_name = request.json.get('shop_name')
+            shop_url = request.json.get('shop_url')
+            res = update_seller(jwt_seller_id, first_name, last_name, email, password, phone, shop_name, shop_url)
+            if res is None:
+                response = jsonify({"message": "No user found with this ID"})
+        
+                return response, 204
+            response = res
 
-        return response, response.status_code
-    response=jsonify({"message": "Request must be JSON"})
-    return response, 415
+            return response, response.status_code
+        response=jsonify({"message": "Request must be JSON"})
+        return response, 415
+    except ValidationError as e:
+        response = jsonify({"message": e.errors()})
+        return response, 400
 
 @seller.get('/')
 @cross_origin(origin='*',headers=['Content- Type','Authorization'])

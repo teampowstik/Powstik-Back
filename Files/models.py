@@ -15,7 +15,7 @@ class User (db.Model):
     state=db.Column(db.String(20),nullable=True)
     city=db.Column(db.String(20),nullable=True)
     address=db.Column(db.String(80),nullable=True)
-    pincode=db.Column(db.String(20),nullable=True)
+    pincode=db.Column(db.Integer,nullable=True)
     plot_no=db.Column(db.String(20),nullable=True)
     profile_img=db.Column(db.String(20),nullable=True)
 

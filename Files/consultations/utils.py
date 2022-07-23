@@ -1,6 +1,7 @@
 from flask import jsonify
 from Files import db
 from ..models import Consultation, ConsultationSchema, BelongsToCategory, BelongsToCategorySchema, Seller, User, UserSchema, Category, CategorySchema, Product, ProductSchema
+from pydantic import HttpUrl, validate_arguments
 
 def check_consultation_seller_relation(consultation_id, seller_id):
     result=db.session.query(Consultation).filter(Consultation.consultation_id==consultation_id).filter(Consultation.seller_id==seller_id).first()
@@ -44,7 +45,8 @@ def ConsultationByID(consultation_id):
         result["categories"].append(res.category_name)
     return result
 
-def ConsultationByCategory(category_name):
+@validate_arguments
+def ConsultationByCategory(category_name:str):
     category_name=category_name.lower()
     category=db.session.query(Category).filter(Category.category_name==category_name).first()
     if not category:
@@ -72,8 +74,9 @@ def ConsultationByCategory(category_name):
     response.status_code=200
     return response
 
-def AddConsultation(consultation, consultant, description, availability, 
-                    image, cost, discount, vendor_info, bio_data, categories, seller_id):
+@validate_arguments
+def AddConsultation(consultation:str, consultant:str, description:str, availability:str, 
+                    image:HttpUrl, cost:float, discount:float, vendor_info:str, bio_data:str, categories:str, seller_id:int):
     try:   
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
@@ -119,8 +122,9 @@ def AddConsultation(consultation, consultant, description, availability,
     response.status_code=200
     return response
 
-def UpdateConsultation(consultation_id, consultation, consultant, description, 
-                        availability, image, cost, discount, vendor_info, bio_data, categories, seller_id):
+@validate_arguments
+def UpdateConsultation(consultation_id:int, consultation:str, consultant:str, description:str, 
+                        availability:str, image:HttpUrl, cost:float, discount:float, vendor_info:str, bio_data:str, categories:str, seller_id:int):
     try:
         if check_is_seller(seller_id) == False:
             response=jsonify({"message":"You are not a seller"})
