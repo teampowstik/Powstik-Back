@@ -11,12 +11,6 @@ class User (db.Model):
     phone=db.Column(db.String(14),unique=True,nullable=False)
     is_seller=db.Column(db.Boolean,nullable=True, default = False) #customer (False) or seller (True)
     gender=db.Column(db.String(20), nullable=True)
-    country=db.Column(db.String(20),nullable=True)
-    state=db.Column(db.String(20),nullable=True)
-    city=db.Column(db.String(20),nullable=True)
-    address=db.Column(db.String(80),nullable=True)
-    pincode=db.Column(db.String(20),nullable=True)
-    plot_no=db.Column(db.String(20),nullable=True)
     profile_img=db.Column(db.String(20),nullable=True)
 
     def __repr__(self):
@@ -81,13 +75,13 @@ class Product (db.Model):
 class Address (db.Model):
     __tablename__ = 'Address'
     address_id = db.Column(db.Integer, primary_key=True)
-    line1 = db.Column(db.String(80), nullable=False)
-    line2 = db.Column(db.String(80), nullable=False)
-    city = db.Column(db.String(80), nullable=False)
-    state = db.Column(db.String(80), nullable=False)
-    country = db.Column(db.String(80), nullable=False)
-    zipcode = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
+    country=db.Column(db.String(20),nullable=True)
+    state=db.Column(db.String(20),nullable=True)
+    city=db.Column(db.String(20),nullable=True)
+    address=db.Column(db.String(80),nullable=True)
+    pincode=db.Column(db.String(20),nullable=True)
+    plot_no=db.Column(db.String(20),nullable=True)
     
 class Order (db.Model):
     __tablename__ = "Order"
