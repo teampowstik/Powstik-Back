@@ -21,11 +21,11 @@ def login_user(email:EmailStr, password:str):
             response=jsonify({"message": "User Successfully logged in", "refresh": refresh, "access": access, "is_seller": output["is_seller"]})
             response.status_code = 200
             return response
-        response=jsonify({"message": "Incorrect Password"})
+        response=jsonify({"message": "Login Failed. Please check your email and password"})
         response.status_code = 401
         return response
-    response=jsonify({"message": "User not found"})
-    response.status_code = 204
+    response=jsonify({"message": "Login Failed. Please check your email and password"})
+    response.status_code = 401
     return response
 
 @validate_arguments
