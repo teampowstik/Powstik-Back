@@ -16,5 +16,3 @@ def make_payments_utils(user_id):
     client = razorpay.Client(auth=("rzp_test_UJ7AxMRWbVx9IE", "o5RHoEZeMpEkEHbhjH5PX9t4"))
     payment = client.order.create({'amount': payment_amount*100, 'currency': 'INR', 'payment_capture': '1'})
     return payment
-    # return render_template('pay.html', payment=payment)
-

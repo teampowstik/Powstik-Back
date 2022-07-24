@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="/success" method="post">
+        <script
+            src="https://checkout.razorpay.com/v1/checkout.js"
+            data-key="rzp_test_UJ7AxMRWbVx9IE"
+            data-amount="{{payment['amount']}}"
+            data-currency="INR"
+            data-order_id="{{payment['order_id']}}"
+            data-button-text="Pay with Razorpay"
+            data-name="Razorpay"
+            data-description="Payment for order No. 10001"
+            data-theme.color="#F37254"
+        ></script>
+        <input type="hidden" custom="Hidden Element" name="hidden">
+    </form>
+</body>
+</html>
